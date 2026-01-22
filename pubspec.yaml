@@ -1,0 +1,73 @@
+name: fogshield_dealer_connect
+description: A dealer management application for Fogshield products
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+
+  # Navigation
+  go_router: ^14.0.0
+
+  # Notifications & Toasts
+  toastification: ^3.0.3
+
+  # UI & Theming
+  google_fonts: ^6.1.0
+  cupertino_icons: ^1.0.8
+
+  # PDF Viewer
+  flutter_pdfview: ^1.4.4
+
+  # Video Player
+  chewie: ^1.13.0
+  video_player: ^2.8.1
+
+  # Local Database (Drift/Sqlite)
+  drift: ^2.30.1
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.2
+  path: ^1.9.0
+
+  # Secure Storage
+  flutter_secure_storage: ^10.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+  # Code Generation for Drift
+  drift_dev: ^2.20.1
+  build_runner: ^2.4.8
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/product/
+
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/Montserrat-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Montserrat-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Montserrat-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Montserrat-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Montserrat-Black.ttf
+          weight: 900
