@@ -2,6 +2,7 @@ class QuotationFormState {
   final String customerName;
   final String phoneNumber;
   final String email;
+  final String gstNumber; // Added as requested
   final String companyName;
   final String billingAddress;
   final String billingCity;
@@ -18,6 +19,7 @@ class QuotationFormState {
     this.customerName = '',
     this.phoneNumber = '',
     this.email = '',
+    this.gstNumber = '',
     this.companyName = '',
     this.billingAddress = '',
     this.billingCity = '',
@@ -35,6 +37,7 @@ class QuotationFormState {
     String? customerName,
     String? phoneNumber,
     String? email,
+    String? gstNumber,
     String? companyName,
     String? billingAddress,
     String? billingCity,
@@ -51,6 +54,7 @@ class QuotationFormState {
       customerName: customerName ?? this.customerName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       email: email ?? this.email,
+      gstNumber: gstNumber ?? this.gstNumber,
       companyName: companyName ?? this.companyName,
       billingAddress: billingAddress ?? this.billingAddress,
       billingCity: billingCity ?? this.billingCity,

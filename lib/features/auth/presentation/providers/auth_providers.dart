@@ -30,11 +30,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String phone,
     required String email,
     required String password,
+    required String dealerCode, // Added required Dealer Code parameter
   }) async {
     state = state.copyWith(status: AuthStatus.loading);
 
     // Simulating registration API call
     await Future.delayed(const Duration(seconds: 2));
+
+    // Logic for validating Dealer Code (Optional Check)
+    // You can add a check here if you want to restrict access to specific codes
+    if (dealerCode.isEmpty) {
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: "A valid Dealer Code is required to join.",
+      );
+      return;
+    }
 
     // In this dummy version, any signup leads to authentication
     state = state.copyWith(status: AuthStatus.authenticated);

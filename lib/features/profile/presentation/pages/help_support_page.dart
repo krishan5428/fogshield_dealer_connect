@@ -1,75 +1,173 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
-import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
 import 'package:fogshield_dealer_connect/features/profile/presentation/widgets/faq_item.dart';
 import 'package:fogshield_dealer_connect/features/profile/presentation/widgets/contact_option_card.dart';
+import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
 
 class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({super.key});
 
+  /// Helper function to launch URLs safely with better error handling
+  Future<void> _launchURL(BuildContext context, String urlString, String errorMessage) async {
+    try {
+      final Uri url = Uri.parse(urlString);
+
+      // Check if the URL can be launched
+      final bool canLaunch = await canLaunchUrl(url);
+
+      if (canLaunch) {
+        final bool launched = await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+
+        if (!launched && context.mounted) {
+          CustomSnackbar.showError(
+            context: context,
+            title: 'Launch Failed',
+            message: errorMessage,
+          );
+        }
+      } else {
+        if (context.mounted) {
+          CustomSnackbar.showError(
+            context: context,
+            title: 'Not Available',
+            message: errorMessage,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error launching URL: $e');
+      if (context.mounted) {
+        CustomSnackbar.showError(
+          context: context,
+          title: 'Error',
+          message: 'Failed to open: ${e.toString()}',
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: const CustomAppBar(title: 'Help & Support'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
+        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Contact Us',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            const Padding(
+              padding: EdgeInsets.only(left: 4, bottom: 16),
+              child: Text(
+                'DIRECT CONTACT',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.colorAccent,
+                  letterSpacing: 1.2,
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
-            const ContactOptionCard(
+
+            // Call Support
+            ContactOptionCard(
               title: 'Call Support',
-              subtitle: '+91 1800-123-456',
-              icon: Icons.call_outlined,
-              color: AppColors.azure,
+              subtitle: '+91-129-4270000',
+              icon: Icons.call_rounded,
+              onTap: () async {
+                await _launchURL(
+                  context,
+                  'tel:+911294270000',
+                  'Could not open dialer. Please dial +91-129-4270000 manually.',
+                );
+              },
             ),
-            const ContactOptionCard(
+
+            // Email Support
+            ContactOptionCard(
               title: 'Email Us',
-              subtitle: 'support@fogshield.com',
-              icon: Icons.email_outlined,
-              color: AppColors.mutedRed,
+              subtitle: 'support@securicoelectronics.com',
+              icon: Icons.email_rounded,
+              onTap: () async {
+                await _launchURL(
+                  context,
+                  'mailto:support@securicoelectronics.com?subject=Support%20Request%20-%20Dealer%20App',
+                  'No email app found. Please email support@securicoelectronics.com.',
+                );
+              },
             ),
-            const ContactOptionCard(
-              title: 'WhatsApp',
-              subtitle: 'Chat with us online',
-              icon: Icons.chat_outlined,
-              color: AppColors.connectionGreen,
+
+            // WhatsApp Support
+            ContactOptionCard(
+              title: 'WhatsApp Chat',
+              subtitle: '+91 8178-370-666',
+              icon: Icons.chat_rounded,
+              gradientColors: const [
+                Color(0xFF22C55E), // WhatsApp Green
+                Color(0xFF16A34A),
+              ],
+              onTap: () async {
+                await _launchURL(
+                  context,
+                  'https://wa.me/918178370666',
+                  'WhatsApp is not installed. Please install WhatsApp or contact via phone/email.',
+                );
+              },
             ),
+
             const SizedBox(height: 32),
-            Text(
-              'Frequently Asked Questions',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            const Padding(
+              padding: EdgeInsets.only(left: 4, bottom: 16),
+              child: Text(
+                'COMMON QUERIES',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.colorAccent,
+                  letterSpacing: 1.2,
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
+
             const FAQItem(
               question: 'How to create a new quotation?',
-              answer: 'You can create a new quotation by tapping the "Create Quotation" button on the dashboard and following the 4-step process.',
+              answer: 'Go to the Dashboard and tap "New Quotation". Follow the 4-step process to enter customer details, select Fogshield units, review the cart, and generate your PDF.',
             ),
             const FAQItem(
-              question: 'Where can I find product datasheets?',
-              answer: 'All product documentation is available under the "Resources" section on your dashboard.',
+              question: 'Where are the technical datasheets?',
+              answer: 'All technical documentation, including manuals and datasheets, can be found in the "Resources" section under "Datasheets" in the sidebar or dashboard.',
             ),
             const FAQItem(
-              question: 'How to share a quotation via WhatsApp?',
-              answer: 'After generating a quotation, select "Share PDF" and choose WhatsApp from the sharing options.',
+              question: 'Can I track if a customer opened a quote?',
+              answer: 'Yes! In the "Activity Logs" (Quotation History) section, you can see the real-time status of each quotation, including "Sent" and "Viewed by Customer".',
             ),
+
             const SizedBox(height: 40),
             Center(
               child: Column(
                 children: [
                   const Text(
-                    'App Version 1.0.0 (Build 26)',
-                    style: TextStyle(color: AppColors.disabledGrey, fontSize: 12),
+                    'APP VERSION 1.0.0 (STABLE)',
+                    style: TextStyle(
+                      color: AppColors.disabledGrey,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: () {},
-                    child: const Text('Check for Updates'),
+                    child: const Text(
+                      'CHECK FOR UPDATES',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                    ),
                   ),
                 ],
               ),

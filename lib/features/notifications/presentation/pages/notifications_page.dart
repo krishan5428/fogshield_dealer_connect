@@ -1,50 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
+import 'package:fogshield_dealer_connect/core/widgets/empty_state.dart';
+import 'package:fogshield_dealer_connect/features/notifications/presentation/providers/notification_providers.dart';
 import 'package:fogshield_dealer_connect/features/notifications/presentation/widgets/notification_tile.dart';
-import 'package:fogshield_dealer_connect/features/notifications/presentation/widgets/notification_filter.dart';
+import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
-class NotificationsPage extends StatelessWidget {
+class NotificationsPage extends ConsumerWidget {
   const NotificationsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(notificationProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const CustomAppBar(title: 'Alert Center'),
       body: Column(
         children: [
-          const NotificationFilter(),
-          Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              children: const [
-                NotificationTile(
-                  title: 'New Offer Available',
-                  message: 'Exclusive 15% discount on Bulk Fluid orders.',
-                  time: '2 mins ago',
-                  icon: Icons.local_offer_outlined,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: AppColors.white,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${state.notifications.length} ALERTS',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.0,
+                    color: AppColors.disabledGrey,
+                  ),
                 ),
-                NotificationTile(
-                  title: 'Quotation Viewed',
-                  message: 'Customer John Wick viewed Quotation #QT-2026-0082.',
-                  time: '45 mins ago',
-                  icon: Icons.visibility_outlined,
-                ),
-                NotificationTile(
-                  title: 'Stock Update',
-                  message: 'SEC FSG1B units are now back in stock at Delhi Hub.',
-                  time: '3 hours ago',
-                  isRead: true,
-                  icon: Icons.inventory_2_outlined,
-                ),
-                NotificationTile(
-                  title: 'Policy Update',
-                  message: 'Please review the updated dealer warranty terms.',
-                  time: 'Yesterday',
-                  isRead: true,
-                  icon: Icons.gavel_rounded,
-                ),
+                if (state.notifications.isNotEmpty)
+                  TextButton(
+                    onPressed: () => ref.read(notificationProvider.notifier).clearAll(),
+                    child: const Text(
+                      'CLEAR ALL',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.mutedRed,
+                      ),
+                    ),
+                  ),
               ],
+            ),
+          ),
+          Expanded(
+            child: state.notifications.isEmpty
+                ? const EmptyState(
+              title: 'No Notifications',
+              description: 'You are all caught up! New alerts will appear here.',
+              icon: Icons.notifications_none_rounded,
+            )
+                : ListView.builder(
+              physics: const BouncingScrollPhysics(),
+              itemCount: state.notifications.length,
+              itemBuilder: (context, index) {
+                final notification = state.notifications[index];
+                return NotificationTile(
+                  title: notification.title,
+                  message: notification.message,
+                  time: 'Just now',
+                  isRead: notification.isRead,
+                  icon: notification.type == 'offer'
+                      ? Icons.local_offer_outlined
+                      : Icons.description_outlined,
+                );
+              },
             ),
           ),
         ],

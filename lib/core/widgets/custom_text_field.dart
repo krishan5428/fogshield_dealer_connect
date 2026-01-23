@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
 class CustomTextField extends StatefulWidget {
@@ -11,6 +12,8 @@ class CustomTextField extends StatefulWidget {
   final IconData? prefixIcon;
   final Widget? suffixIcon;
   final int maxLines;
+  final int? maxLength; // Added for validation
+  final List<TextInputFormatter>? inputFormatters; // Added for strict formatting
   final bool readOnly;
   final VoidCallback? onTap;
   final Function(String)? onChanged;
@@ -26,6 +29,8 @@ class CustomTextField extends StatefulWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.maxLines = 1,
+    this.maxLength,
+    this.inputFormatters,
     this.readOnly = false,
     this.onTap,
     this.onChanged,
@@ -57,10 +62,13 @@ class _CustomTextFieldState extends State<CustomTextField> {
           keyboardType: widget.keyboardType,
           obscureText: widget.isPassword ? _obscureText : false,
           maxLines: widget.maxLines,
+          maxLength: widget.maxLength,
+          inputFormatters: widget.inputFormatters,
           readOnly: widget.readOnly,
           onTap: widget.onTap,
           onChanged: widget.onChanged,
           decoration: InputDecoration(
+            counterText: "", // Hide default counter
             hintText: widget.hint,
             prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon, size: 20) : null,
             suffixIcon: widget.isPassword

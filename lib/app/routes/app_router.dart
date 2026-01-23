@@ -23,6 +23,9 @@ import 'package:fogshield_dealer_connect/features/products/presentation/pages/br
 import 'package:fogshield_dealer_connect/features/offers/presentation/pages/offers_page.dart';
 import 'package:fogshield_dealer_connect/features/offers/presentation/pages/offer_detail_page.dart';
 import 'package:fogshield_dealer_connect/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:fogshield_dealer_connect/features/products/presentation/pages/product_catalog_page.dart';
+import 'package:fogshield_dealer_connect/features/products/presentation/pages/video_player_page.dart';
+import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
 
 class AppRouter {
   AppRouter._();
@@ -31,7 +34,6 @@ class AppRouter {
     initialLocation: RouteNames.login,
     debugLogDiagnostics: true,
     routes: [
-      // --- Authentication ---
       GoRoute(
         path: RouteNames.login,
         name: 'login',
@@ -42,15 +44,11 @@ class AppRouter {
         name: 'signup',
         builder: (context, state) => const SignupPage(),
       ),
-
-      // --- Dashboard ---
       GoRoute(
         path: RouteNames.dashboard,
         name: 'dashboard',
         builder: (context, state) => const DashboardPage(),
       ),
-
-      // --- Profile & Settings ---
       GoRoute(
         path: RouteNames.profile,
         name: 'profile',
@@ -71,8 +69,6 @@ class AppRouter {
         name: 'about-us',
         builder: (context, state) => const AboutUsPage(),
       ),
-
-      // --- Quotation Flow ---
       GoRoute(
         path: RouteNames.quotationForm,
         name: 'quotation-form',
@@ -108,12 +104,10 @@ class AppRouter {
         name: 'quotation-pdf-viewer',
         builder: (context, state) => const QuotationPdfViewerPage(),
       ),
-
-      // --- Products & Resources ---
       GoRoute(
         path: RouteNames.productCatalog,
         name: 'product-catalog',
-        builder: (context, state) => const ProductSelectionPage(),
+        builder: (context, state) => const ProductCatalogPage(),
       ),
       GoRoute(
         path: RouteNames.productDetail,
@@ -128,7 +122,19 @@ class AppRouter {
       GoRoute(
         path: RouteNames.datasheetViewer,
         name: 'datasheet-viewer',
-        builder: (context, state) => const DatasheetViewerPage(),
+        builder: (context, state) {
+          final pdfUrl = state.extra as String?;
+          return DatasheetViewerPage(pdfUrl: pdfUrl);
+        },
+      ),
+      GoRoute(
+        path: RouteNames.videoPlayer,
+        name: 'video-player',
+        builder: (context, state) {
+          // Changed assetPath to videoUrl to match VideoPlayerPage parameters
+          final videoUrl = state.extra as String?;
+          return VideoPlayerPage(videoUrl: videoUrl);
+        },
       ),
       GoRoute(
         path: RouteNames.productPhotos,
@@ -140,8 +146,6 @@ class AppRouter {
         name: 'brochures',
         builder: (context, state) => const BrochuresPage(),
       ),
-
-      // --- Offers ---
       GoRoute(
         path: RouteNames.offers,
         name: 'offers',
@@ -150,10 +154,11 @@ class AppRouter {
       GoRoute(
         path: RouteNames.offerDetail,
         name: 'offer-detail',
-        builder: (context, state) => const OfferDetailPage(),
+        builder: (context, state) {
+          final offer = state.extra as Offer?;
+          return OfferDetailPage(offer: offer);
+        },
       ),
-
-      // --- Notifications ---
       GoRoute(
         path: RouteNames.notifications,
         name: 'notifications',
@@ -161,38 +166,4 @@ class AppRouter {
       ),
     ],
   );
-}
-
-// Temporary placeholder for screens built in future steps
-class PlaceholderPage extends StatelessWidget {
-  final String title;
-  const PlaceholderPage({super.key, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.construction_rounded, size: 64, color: Colors.grey),
-            const SizedBox(height: 16),
-            Text(
-              '$title Screen\nUnder Development',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

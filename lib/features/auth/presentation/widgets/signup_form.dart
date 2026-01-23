@@ -19,6 +19,8 @@ class _SignupFormState extends ConsumerState<SignupForm> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  // 1. Added Dealer Code Controller
+  final _dealerCodeController = TextEditingController();
 
   @override
   void dispose() {
@@ -26,6 +28,7 @@ class _SignupFormState extends ConsumerState<SignupForm> {
     _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _dealerCodeController.dispose(); // Dispose the new controller
     super.dispose();
   }
 
@@ -36,6 +39,8 @@ class _SignupFormState extends ConsumerState<SignupForm> {
         phone: _phoneController.text,
         email: _emailController.text,
         password: _passwordController.text,
+        // 2. Pass the dealer code to your signup method
+        dealerCode: _dealerCodeController.text,
       );
     }
   }
@@ -63,6 +68,20 @@ class _SignupFormState extends ConsumerState<SignupForm> {
             prefixIcon: Icons.phone_android_rounded,
             keyboardType: TextInputType.phone,
             validator: Validators.phone,
+          ),
+          const SizedBox(height: 16),
+          // 3. Added Dealer Code TextField (Required)
+          CustomTextField(
+            label: 'Dealer Code',
+            hint: 'Enter your unique dealer code',
+            controller: _dealerCodeController,
+            prefixIcon: Icons.vignette_outlined,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Dealer code is required';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 16),
           CustomTextField(

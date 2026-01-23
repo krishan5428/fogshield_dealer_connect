@@ -1,25 +1,38 @@
-import 'package:fogshield_dealer_connect/features/profile/presentation/widgets/profile_picture_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_text_field.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
+import 'package:fogshield_dealer_connect/features/profile/presentation/providers/profile_providers.dart';
+import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
+import 'package:fogshield_dealer_connect/features/profile/presentation/widgets/profile_picture_picker.dart';
 
-class EditProfilePage extends StatefulWidget {
+class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
 
   @override
-  State<EditProfilePage> createState() => _EditProfilePageState();
+  ConsumerState<EditProfilePage> createState() => _EditProfilePageState();
 }
 
-class _EditProfilePageState extends State<EditProfilePage> {
+class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Example controllers
-  final _nameController = TextEditingController(text: 'John Doe');
-  final _emailController = TextEditingController(text: 'john.doe@dealership.com');
-  final _phoneController = TextEditingController(text: '9876543210');
-  final _companyController = TextEditingController(text: 'Doe Automobile Solutions');
-  final _addressController = TextEditingController(text: '123, Dealer Hub, Sector 18, Gurugram');
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
+  late TextEditingController _companyController;
+  late TextEditingController _addressController;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = ref.read(profileProvider);
+    _nameController = TextEditingController(text: profile.name);
+    _emailController = TextEditingController(text: profile.email);
+    _phoneController = TextEditingController(text: profile.phone);
+    _companyController = TextEditingController(text: profile.companyName);
+    _addressController = TextEditingController(text: profile.address);
+  }
 
   @override
   void dispose() {
@@ -31,9 +44,30 @@ class _EditProfilePageState extends State<EditProfilePage> {
     super.dispose();
   }
 
+  void _saveChanges() {
+    if (_formKey.currentState!.validate()) {
+      ref.read(profileProvider.notifier).updateProfile(
+        name: _nameController.text,
+        email: _emailController.text,
+        phone: _phoneController.text,
+        companyName: _companyController.text,
+        address: _addressController.text,
+      );
+
+      CustomSnackbar.showSuccess(
+        context: context,
+        title: 'Profile Updated',
+        message: 'Your changes have been saved successfully.',
+      );
+
+      Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(title: 'Edit Profile'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -78,11 +112,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               const SizedBox(height: 40),
               CustomButton(
                 text: 'SAVE CHANGES',
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.pop(context);
-                  }
-                },
+                onPressed: _saveChanges,
               ),
               const SizedBox(height: 12),
               CustomButton(

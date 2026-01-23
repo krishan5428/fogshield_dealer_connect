@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
+import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
+import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
 
 class OfferDetailPage extends StatelessWidget {
-  const OfferDetailPage({super.key});
+  final Offer? offer;
+
+  const OfferDetailPage({super.key, this.offer});
 
   @override
   Widget build(BuildContext context) {
+    // Safety check for null data
+    if (offer == null) {
+      return const Scaffold(body: Center(child: Text('Offer details not found.')));
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: const CustomAppBar(title: 'Offer Details'),
+      appBar: CustomAppBar(title: offer!.title),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -22,9 +32,10 @@ class OfferDetailPage extends StatelessWidget {
                 children: [
                   const Icon(Icons.stars_rounded, color: Colors.white, size: 64),
                   const SizedBox(height: 16),
-                  const Text(
-                    '15% FLAT DISCOUNT',
-                    style: TextStyle(
+                  Text(
+                    '${offer!.discount} FLAT DISCOUNT',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
@@ -32,7 +43,8 @@ class OfferDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Valid on all Bulk Fluid Orders',
+                    offer!.description,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.8),
                       fontSize: 14,
@@ -51,10 +63,7 @@ class OfferDetailPage extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
                   ),
                   const SizedBox(height: 16),
-                  _buildTerm('Applicable only on orders above 10 units.'),
-                  _buildTerm('Cannot be combined with other dealer points.'),
-                  _buildTerm('Validity: 22nd Jan - 15th Feb 2026.'),
-                  _buildTerm('Stock availability depends on regional hub.'),
+                  ...offer!.terms.map((term) => _buildTerm(term)),
                   const SizedBox(height: 40),
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -75,9 +84,9 @@ class OfferDetailPage extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        const Text(
-                          'BULKFIG15',
-                          style: TextStyle(
+                        Text(
+                          offer!.code,
+                          style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
                             color: AppColors.colorCompanyPrimary,
@@ -88,7 +97,15 @@ class OfferDetailPage extends StatelessWidget {
                         CustomButton(
                           text: 'COPY TO CLIPBOARD',
                           size: ButtonSize.small,
-                          onPressed: () {},
+                          onPressed: () {
+                            // Implemented functional copy logic
+                            Clipboard.setData(ClipboardData(text: offer!.code));
+                            CustomSnackbar.showSuccess(
+                              context: context,
+                              title: 'Coupon Copied',
+                              message: 'The code ${offer!.code} is ready for use.',
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -108,7 +125,7 @@ class OfferDetailPage extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle_outline_rounded, size: 18, color: AppColors.green),
+          const Icon(Icons.check_circle_outline_rounded, size: 18, color: AppColors.connectionGreen),
           const SizedBox(width: 12),
           Expanded(child: Text(text, style: const TextStyle(height: 1.4))),
         ],

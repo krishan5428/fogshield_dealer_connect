@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
 class NotificationIcon extends StatelessWidget {
@@ -11,43 +13,30 @@ class NotificationIcon extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Container(
-          margin: const EdgeInsets.only(right: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: IconButton(
-            onPressed: () {
-              // Future: Navigate to Notifications Page
-            },
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              size: 24,
-              color: AppColors.black,
-            ),
-          ),
+        IconButton(
+          onPressed: () => context.push(RouteNames.notifications),
+          icon: const Icon(Icons.notifications_none_rounded, size: 28),
         ),
         if (count > 0)
           Positioned(
             right: 8,
             top: 8,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C2C2C),
-                borderRadius: BorderRadius.circular(10),
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: AppColors.mutedRed,
+                shape: BoxShape.circle,
               ),
               constraints: const BoxConstraints(
-                minWidth: 18,
-                minHeight: 18,
+                minWidth: 16,
+                minHeight: 16,
               ),
               child: Text(
                 count > 9 ? '9+' : '$count',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),

@@ -1,31 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
+import 'package:fogshield_dealer_connect/features/profile/presentation/providers/profile_providers.dart';
 
-class ProfileHeader extends StatelessWidget {
-  final String name;
-  final String subtitle;
-  final String? imageUrl;
-
-  const ProfileHeader({
-    super.key,
-    required this.name,
-    required this.subtitle,
-    this.imageUrl,
-  });
+class ProfileHeader extends ConsumerWidget {
+  const ProfileHeader({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(profileProvider);
+
     return Column(
       children: [
         Stack(
           alignment: Alignment.center,
           children: [
             Container(
-              height: 120,
-              // decoration: const BoxDecoration(
-              //   color: AppColors.colorCompanyPrimary,
-              //   borderRadius: BorderRadius.vertical(bottom: Radius.circular(50)),
-              // ),
+              height: 100,
+              decoration: const BoxDecoration(
+                color: AppColors.colorCompanyPrimary,
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(50)),
+              ),
             ),
             Container(
               margin: const EdgeInsets.only(top: 40),
@@ -40,27 +35,32 @@ class ProfileHeader extends StatelessWidget {
                   )
                 ],
               ),
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 radius: 60,
                 backgroundColor: AppColors.lightGrey,
-                child: Icon(Icons.person, size: 70, color: AppColors.colorAccent),
+                backgroundImage: profile.profileImage != null
+                    ? AssetImage(profile.profileImage!)
+                    : null,
+                child: profile.profileImage == null
+                    ? const Icon(Icons.person, size: 70, color: AppColors.colorAccent)
+                    : null,
               ),
             ),
           ],
         ),
         const SizedBox(height: 16),
         Text(
-          name,
+          profile.name,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w900,
           ),
         ),
         const SizedBox(height: 4),
         Text(
-          subtitle,
+          'Authorized Dealer • ID: FS-8821',
           style: const TextStyle(
             color: AppColors.disabledGrey,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

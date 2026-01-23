@@ -5,6 +5,8 @@ class Offer {
   final String discount;
   final String code;
   final DateTime expiryDate;
+  final List<String> terms;
+  final String bannerTitle;
 
   Offer({
     required this.id,
@@ -13,12 +15,7 @@ class Offer {
     required this.discount,
     required this.code,
     required this.expiryDate,
+    required this.terms,
+    this.bannerTitle = 'EXCLUSIVE DEALER OFFER',
   });
-}
-
-class OfferState {
-  final List<Offer> offers;
-  final bool isLoading;
-
-  OfferState({required this.offers, this.isLoading = false});
 }

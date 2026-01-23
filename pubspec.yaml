@@ -13,6 +13,12 @@ dependencies:
   # State Management
   flutter_riverpod: ^2.5.1
 
+  #image_picker
+  image_picker: ^1.2.1
+
+  #url_launcher
+  url_launcher: ^6.3.2
+
   # Navigation
   go_router: ^14.0.0
 
@@ -35,9 +41,14 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.24
   path_provider: ^2.1.2
   path: ^1.9.0
+  #printing
+  printing: ^5.14.2
 
   # Secure Storage
   flutter_secure_storage: ^10.0.0
+
+  # HTTP requests for downloading PDFs
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:

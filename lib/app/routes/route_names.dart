@@ -23,6 +23,7 @@ class RouteNames {
   static const String productDetail = '/product-detail';
   static const String datasheets = '/datasheets';
   static const String datasheetViewer = '/datasheet-viewer';
+  static const String videoPlayer = '/video-player'; // New Route
   static const String productPhotos = '/product-photos';
   static const String brochures = '/brochures';
 

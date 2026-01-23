@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_text_field.dart';
 import 'package:fogshield_dealer_connect/core/widgets/section_header.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/address_input.dart';
@@ -22,6 +23,7 @@ class _QuotationFormFieldsState extends State<QuotationFormFields> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
+  final _gstController = TextEditingController(); // New
   final _companyController = TextEditingController();
   final _bAddrController = TextEditingController();
   final _bCityController = TextEditingController();
@@ -36,6 +38,7 @@ class _QuotationFormFieldsState extends State<QuotationFormFields> {
     _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
+    _gstController.dispose();
     _companyController.dispose();
     _bAddrController.dispose();
     _bCityController.dispose();
@@ -69,6 +72,8 @@ class _QuotationFormFieldsState extends State<QuotationFormFields> {
             controller: _phoneController,
             prefixIcon: Icons.phone_android_rounded,
             keyboardType: TextInputType.phone,
+            maxLength: 10, // Enforced limit
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             validator: Validators.phone,
           ),
           const SizedBox(height: 16),
@@ -78,6 +83,15 @@ class _QuotationFormFieldsState extends State<QuotationFormFields> {
             controller: _emailController,
             prefixIcon: Icons.alternate_email_rounded,
             keyboardType: TextInputType.emailAddress,
+          ),
+          const SizedBox(height: 16),
+          // GST Field Added above Company Name
+          CustomTextField(
+            label: 'GST Number (Optional)',
+            hint: 'e.g. 07AAAAA0000A1Z5',
+            controller: _gstController,
+            prefixIcon: Icons.receipt_long_outlined,
+            inputFormatters: [UpperCaseTextFormatter()],
           ),
           const SizedBox(height: 16),
           CustomTextField(
@@ -129,5 +143,12 @@ class _QuotationFormFieldsState extends State<QuotationFormFields> {
         ],
       ),
     );
+  }
+}
+
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return newValue.copyWith(text: newValue.text.toUpperCase());
   }
 }
