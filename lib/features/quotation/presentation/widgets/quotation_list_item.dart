@@ -65,23 +65,23 @@ class QuotationListItem extends StatelessWidget {
                   ),
                 ],
               ),
-              const Divider(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.inventory_2_outlined, size: 14, color: AppColors.disabledGrey),
-                      SizedBox(width: 4),
-                      Text('3 Items', style: TextStyle(fontSize: 11, color: AppColors.disabledGrey)),
-                    ],
-                  ),
-                  SwipeActionButtons(
-                    onDelete: () {},
-                    onShare: () {},
-                  ),
-                ],
-              ),
+              // const Divider(height: 24),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     const Row(
+              //       children: [
+              //         Icon(Icons.inventory_2_outlined, size: 14, color: AppColors.disabledGrey),
+              //         SizedBox(width: 4),
+              //         Text('3 Items', style: TextStyle(fontSize: 11, color: AppColors.disabledGrey)),
+              //       ],
+              //     ),
+              //     SwipeActionButtons(
+              //       onDelete: () {},
+              //       onShare: () {},
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

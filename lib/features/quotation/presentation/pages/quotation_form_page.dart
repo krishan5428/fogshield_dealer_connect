@@ -1,33 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/stepper_indicator.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/quotation_form_fields.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/form_actions.dart';
-// import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/customer_search.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
+import 'package:fogshield_dealer_connect/features/quotation/presentation/providers/quotation_form_providers.dart';
 
-class QuotationFormPage extends StatefulWidget {
+class QuotationFormPage extends ConsumerStatefulWidget {
   const QuotationFormPage({super.key});
 
   @override
-  State<QuotationFormPage> createState() => _QuotationFormPageState();
+  ConsumerState<QuotationFormPage> createState() => _QuotationFormPageState();
 }
 
-class _QuotationFormPageState extends State<QuotationFormPage> {
+class _QuotationFormPageState extends ConsumerState<QuotationFormPage> {
   final _formKey = GlobalKey<FormState>();
 
   void _onNext() {
     if (_formKey.currentState!.validate()) {
-      // Logic to save state can be added here later
+      // Data is now auto-saved as the user types,
+      // so we just need to validate and navigate.
       context.push(RouteNames.productSelection);
     }
   }
 
   void _onSaveDraft() {
-    // Logic for saving draft
+    // Show feedback that the progress is saved
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Quotation saved as draft')),
+      const SnackBar(
+        content: Text('Progress saved automatically'),
+        backgroundColor: Colors.green,
+      ),
     );
   }
 
@@ -44,9 +49,11 @@ class _QuotationFormPageState extends State<QuotationFormPage> {
               physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  // const CustomerSearch(),
                   const SizedBox(height: 8),
-                  QuotationFormFields(formKey: _formKey),
+                  // Form fields now handle their own state updates in real-time
+                  QuotationFormFields(
+                    formKey: _formKey,
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),

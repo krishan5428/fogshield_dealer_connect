@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
+import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
 
-class ProductsSummaryTable extends StatelessWidget {
+class ProductsSummaryTable extends ConsumerWidget {
   const ProductsSummaryTable({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Mock Data
-    final items = [
-      {'name': 'PPF Ultra 2026', 'qty': '2', 'price': '45,000', 'total': '90,000'},
-      {'name': 'Ceramic Gold', 'qty': '1', 'price': '12,000', 'total': '12,000'},
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the actual cart state
+    final cartState = ref.watch(cartProvider);
+    final items = cartState.items;
+
+    if (items.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+          'No items selected',
+          style: TextStyle(color: AppColors.disabledGrey, fontStyle: FontStyle.italic),
+        ),
+      );
+    }
 
     return Column(
       children: [
+        // Table Header
         Container(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
           decoration: const BoxDecoration(
@@ -22,12 +33,14 @@ class ProductsSummaryTable extends StatelessWidget {
           ),
           child: const Row(
             children: [
-              Expanded(flex: 3, child: Text('Item', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-              Expanded(child: Text('Qty', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-              Expanded(flex: 2, child: Text('Total', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+              Expanded(flex: 3, child: Text('Item', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.black))),
+              Expanded(child: Text('Qty', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.black), textAlign: TextAlign.center)),
+              Expanded(flex: 2, child: Text('Total', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.black), textAlign: TextAlign.right)),
             ],
           ),
         ),
+
+        // List of actual items from Cart
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -41,32 +54,47 @@ class ProductsSummaryTable extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 3,
-                    child: Text(item['name']!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                    child: Text(
+                      item.name,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.black),
+                    ),
                   ),
                   Expanded(
-                    child: Text(item['qty']!, style: const TextStyle(fontSize: 13), textAlign: TextAlign.center),
+                    child: Text(
+                      item.quantity.toString(),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   Expanded(
                     flex: 2,
-                    child: Text('₹${item['total']}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.right),
+                    child: Text(
+                      '₹${item.total.toStringAsFixed(0)}',
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+                      textAlign: TextAlign.right,
+                    ),
                   ),
                 ],
               ),
             );
           },
         ),
-        const SizedBox(height: 8),
+
+        // Dynamic Subtotal Footer inside the table
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: AppColors.colorCompanyPrimary.withOpacity(0.05),
             borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
           ),
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Subtotal', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('₹1,02,000', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.colorCompanyPrimary)),
+              const Text('Items Subtotal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              Text(
+                '₹${cartState.total.toStringAsFixed(0)}',
+                style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.colorCompanyPrimary, fontSize: 14),
+              ),
             ],
           ),
         ),

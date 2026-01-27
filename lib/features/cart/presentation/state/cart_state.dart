@@ -17,41 +17,42 @@ class CartItem {
 
   double get total => price * quantity;
 
-  CartItem copyWith({int? quantity}) {
+  CartItem copyWith({int? quantity, String? imageUrl}) {
     return CartItem(
       id: id,
       name: name,
       sku: sku,
       price: price,
       quantity: quantity ?? this.quantity,
-      imageUrl: imageUrl,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }
 
 class CartState {
   final List<CartItem> items;
-  final double discountAmount;
+  final double discountPercentage; // Store as percentage (e.g. 0.1 for 10%)
   final bool isLoading;
 
   CartState({
     required this.items,
-    this.discountAmount = 0,
+    this.discountPercentage = 0,
     this.isLoading = false,
   });
 
   double get subtotal => items.fold(0, (sum, item) => sum + item.total);
+  double get discountAmount => subtotal * discountPercentage;
   double get tax => (subtotal - discountAmount) * 0.18; // 18% GST
   double get total => (subtotal - discountAmount) + tax;
 
   CartState copyWith({
     List<CartItem>? items,
-    double? discountAmount,
+    double? discountPercentage,
     bool? isLoading,
   }) {
     return CartState(
       items: items ?? this.items,
-      discountAmount: discountAmount ?? this.discountAmount,
+      discountPercentage: discountPercentage ?? this.discountPercentage,
       isLoading: isLoading ?? this.isLoading,
     );
   }

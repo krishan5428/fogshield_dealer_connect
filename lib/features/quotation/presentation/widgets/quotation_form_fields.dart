@@ -1,40 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_text_field.dart';
 import 'package:fogshield_dealer_connect/core/widgets/section_header.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/address_input.dart';
 import 'package:fogshield_dealer_connect/core/utils/validators.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
+import 'package:fogshield_dealer_connect/features/quotation/presentation/providers/quotation_form_providers.dart';
 
-class QuotationFormFields extends StatefulWidget {
+class QuotationFormFields extends ConsumerStatefulWidget {
   final GlobalKey<FormState> formKey;
   const QuotationFormFields({super.key, required this.formKey});
 
   @override
-  State<QuotationFormFields> createState() => _QuotationFormFieldsState();
+  ConsumerState<QuotationFormFields> createState() => _QuotationFormFieldsState();
 }
 
-class _QuotationFormFieldsState extends State<QuotationFormFields> {
+class _QuotationFormFieldsState extends ConsumerState<QuotationFormFields> {
   bool _sameAsBilling = true;
   String? _billingState;
   String? _shippingState;
 
   // Controllers
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _gstController = TextEditingController(); // New
-  final _companyController = TextEditingController();
-  final _bAddrController = TextEditingController();
-  final _bCityController = TextEditingController();
-  final _bPincodeController = TextEditingController();
-  final _sAddrController = TextEditingController();
-  final _sCityController = TextEditingController();
-  final _sPincodeController = TextEditingController();
-  final _notesController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _phoneController;
+  late TextEditingController _emailController;
+  late TextEditingController _gstController;
+  late TextEditingController _companyController;
+  late TextEditingController _bAddrController;
+  late TextEditingController _bCityController;
+  late TextEditingController _bPincodeController;
+  late TextEditingController _sAddrController;
+  late TextEditingController _sCityController;
+  late TextEditingController _sPincodeController;
+  late TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    final state = ref.read(quotationFormProvider);
+
+    // Pre-fill controllers from existing state
+    _nameController = TextEditingController(text: state.customerName);
+    _phoneController = TextEditingController(text: state.phoneNumber);
+    _emailController = TextEditingController(text: state.email);
+    _gstController = TextEditingController(text: state.gstNumber);
+    _companyController = TextEditingController(text: state.companyName);
+    _bAddrController = TextEditingController(text: state.billingAddress);
+    _bCityController = TextEditingController(text: state.billingCity);
+    _bPincodeController = TextEditingController(text: state.billingPincode);
+    _sAddrController = TextEditingController(text: state.shippingAddress);
+    _sCityController = TextEditingController(text: state.shippingCity);
+    _sPincodeController = TextEditingController(text: state.shippingPincode);
+    _notesController = TextEditingController(text: state.notes);
+
+    _sameAsBilling = state.sameAsBilling;
+    _billingState = state.billingState.isEmpty ? null : state.billingState;
+    _shippingState = state.shippingState.isEmpty ? null : state.shippingState;
+
+    // Add listeners to all controllers for Real-Time synchronization
+    _nameController.addListener(_updateProvider);
+    _phoneController.addListener(_updateProvider);
+    _emailController.addListener(_updateProvider);
+    _gstController.addListener(_updateProvider);
+    _companyController.addListener(_updateProvider);
+    _bAddrController.addListener(_updateProvider);
+    _bCityController.addListener(_updateProvider);
+    _bPincodeController.addListener(_updateProvider);
+    _sAddrController.addListener(_updateProvider);
+    _sCityController.addListener(_updateProvider);
+    _sPincodeController.addListener(_updateProvider);
+    _notesController.addListener(_updateProvider);
+  }
+
+  void _updateProvider() {
+    ref.read(quotationFormProvider.notifier).updateField(
+      name: _nameController.text,
+      phone: _phoneController.text,
+      email: _emailController.text,
+      gst: _gstController.text,
+      company: _companyController.text,
+      bAddress: _bAddrController.text,
+      bCity: _bCityController.text,
+      bState: _billingState ?? '', // Use empty string to avoid null-block in copyWith
+      bPincode: _bPincodeController.text,
+      sameAsBilling: _sameAsBilling,
+      sAddress: _sAddrController.text,
+      sCity: _sCityController.text,
+      sState: _shippingState ?? '',
+      sPincode: _sPincodeController.text,
+      notes: _notesController.text,
+    );
+  }
 
   @override
   void dispose() {
+    // Dispose all controllers to prevent memory leaks
     _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
@@ -72,7 +133,7 @@ class _QuotationFormFieldsState extends State<QuotationFormFields> {
             controller: _phoneController,
             prefixIcon: Icons.phone_android_rounded,
             keyboardType: TextInputType.phone,
-            maxLength: 10, // Enforced limit
+            maxLength: 10,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             validator: Validators.phone,
           ),
@@ -85,7 +146,6 @@ class _QuotationFormFieldsState extends State<QuotationFormFields> {
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 16),
-          // GST Field Added above Company Name
           CustomTextField(
             label: 'GST Number (Optional)',
             hint: 'e.g. 07AAAAA0000A1Z5',
@@ -108,13 +168,19 @@ class _QuotationFormFieldsState extends State<QuotationFormFields> {
             cityController: _bCityController,
             pincodeController: _bPincodeController,
             selectedState: _billingState,
-            onStateChanged: (val) => setState(() => _billingState = val),
+            onStateChanged: (val) {
+              setState(() => _billingState = val);
+              _updateProvider();
+            },
           ),
 
           const SizedBox(height: 16),
           CheckboxListTile(
             value: _sameAsBilling,
-            onChanged: (val) => setState(() => _sameAsBilling = val ?? true),
+            onChanged: (val) {
+              setState(() => _sameAsBilling = val ?? true);
+              _updateProvider();
+            },
             title: const Text('Shipping address same as billing'),
             controlAffinity: ListTileControlAffinity.leading,
             contentPadding: EdgeInsets.zero,
@@ -129,7 +195,10 @@ class _QuotationFormFieldsState extends State<QuotationFormFields> {
               cityController: _sCityController,
               pincodeController: _sPincodeController,
               selectedState: _shippingState,
-              onStateChanged: (val) => setState(() => _shippingState = val),
+              onStateChanged: (val) {
+                setState(() => _shippingState = val);
+                _updateProvider();
+              },
             ),
           ],
 

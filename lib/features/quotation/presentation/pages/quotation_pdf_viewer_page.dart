@@ -1,62 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
-import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/pdf_preview_widget.dart';
-import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/share_options_sheet.dart';
-import 'package:fogshield_dealer_connect/core/widgets/zoom_controls.dart';
-import 'package:fogshield_dealer_connect/core/widgets/pdf_page_indicator.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:printing/printing.dart';
+import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
+import 'package:fogshield_dealer_connect/features/quotation/presentation/providers/quotation_form_providers.dart';
+import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/pdf_service.dart';
+import 'dart:typed_data';
 
-class QuotationPdfViewerPage extends StatelessWidget {
+class QuotationPdfViewerPage extends ConsumerWidget {
   const QuotationPdfViewerPage({super.key});
 
+  Future<void> _handlePrint(Uint8List bytes) async {
+    await Printing.layoutPdf(onLayout: (format) => bytes);
+  }
+
+  Future<void> _handleShare(Uint8List bytes) async {
+    await Printing.sharePdf(bytes: bytes, filename: 'quotation.pdf');
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cartState = ref.watch(cartProvider);
+    final formState = ref.watch(quotationFormProvider);
+
     return Scaffold(
-      appBar: CustomAppBar(
-        title: 'QT-2026-0082',
+      appBar: AppBar(
+        title: const Text('Quotation Preview'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_rounded),
-            onPressed: () => showModalBottomSheet(
-              context: context,
-              backgroundColor: Colors.transparent,
-              builder: (context) => const ShareOptionsSheet(),
-            ),
+            icon: const Icon(Icons.print),
+            onPressed: () async {
+              final bytes = await PdfService.generateQuotationPdf(formState, cartState);
+              await _handlePrint(bytes);
+            },
           ),
           IconButton(
-            icon: const Icon(Icons.download_rounded),
-            onPressed: () {},
+            icon: const Icon(Icons.share),
+            onPressed: () async {
+              final bytes = await PdfService.generateQuotationPdf(formState, cartState);
+              await _handleShare(bytes);
+            },
           ),
         ],
       ),
-      body: const Stack(
-        children: [
-          PdfPreviewWidget(),
-          Positioned(
-            right: 16,
-            bottom: 100,
-            child: ZoomControls(
-              onZoomIn: _mockAction,
-              onZoomOut: _mockAction,
-              onReset: _mockAction,
+      body: PdfPreview(
+        build: (format) => PdfService.generateQuotationPdf(formState, cartState),
+        useActions: false,
+        canChangePageFormat: false,
+        canChangeOrientation: false,
+        canDebug: false,
+        pdfPreviewPageDecoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
             ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 32,
-            child: Center(
-              child: PdfPageIndicator(
-                currentPage: 1,
-                totalPages: 3,
-                onPrevious: _mockAction,
-                onNext: _mockAction,
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
-
-  static void _mockAction() {}
 }

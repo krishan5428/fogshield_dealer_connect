@@ -8,6 +8,7 @@ class CartSummary extends StatelessWidget {
   final double discount;
   final double tax;
   final double total;
+  final Function(double) onDiscountApplied;
 
   const CartSummary({
     super.key,
@@ -15,6 +16,7 @@ class CartSummary extends StatelessWidget {
     required this.discount,
     required this.tax,
     required this.total,
+    required this.onDiscountApplied,
   });
 
   @override
@@ -35,7 +37,8 @@ class CartSummary extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const DiscountSection(),
+          // Pass the callback down to the discount section
+          DiscountSection(onDiscountApplied: onDiscountApplied),
           const SizedBox(height: 20),
           PriceRow(label: 'Subtotal', value: '₹${subtotal.toStringAsFixed(0)}'),
           PriceRow(

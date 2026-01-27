@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/stepper_indicator.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/quotation_summary.dart';
@@ -7,15 +8,17 @@ import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/loading_indicator.dart';
+import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
+import 'package:fogshield_dealer_connect/features/quotation/presentation/providers/quotation_form_providers.dart';
 
-class QuotationReviewPage extends StatefulWidget {
+class QuotationReviewPage extends ConsumerStatefulWidget {
   const QuotationReviewPage({super.key});
 
   @override
-  State<QuotationReviewPage> createState() => _QuotationReviewPageState();
+  ConsumerState<QuotationReviewPage> createState() => _QuotationReviewPageState();
 }
 
-class _QuotationReviewPageState extends State<QuotationReviewPage> {
+class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
   bool _isSubmitting = false;
 
   void _handleSubmit() async {
@@ -27,6 +30,10 @@ class _QuotationReviewPageState extends State<QuotationReviewPage> {
     if (!mounted) return;
     setState(() => _isSubmitting = false);
 
+    // Clear cart and form after successful submission if needed
+    // ref.read(cartProvider.notifier).clearCart();
+    // ref.read(quotationFormProvider.notifier).resetForm();
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -36,7 +43,10 @@ class _QuotationReviewPageState extends State<QuotationReviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    // We wrap the entire Scaffold in a Stack to ensure the overlay covers EVERYTHING
+    // Watch providers to ensure UI updates if state changes elsewhere
+    final cartState = ref.watch(cartProvider);
+    final formState = ref.watch(quotationFormProvider);
+
     return Stack(
       children: [
         Scaffold(
@@ -51,6 +61,7 @@ class _QuotationReviewPageState extends State<QuotationReviewPage> {
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     children: [
+                      // The summary now reflects real-time form and cart data
                       const QuotationSummary(),
                       const SizedBox(height: 32),
                       const Icon(Icons.verified_user_outlined, color: AppColors.disabledGrey, size: 24),
@@ -94,7 +105,7 @@ class _QuotationReviewPageState extends State<QuotationReviewPage> {
                     text: 'SAVE DRAFT',
                     isOutlined: true,
                     onPressed: _isSubmitting ? null : () {
-                      // Draft logic
+                      // Draft logic using formState and cartState
                     },
                   ),
                 ),
@@ -102,7 +113,8 @@ class _QuotationReviewPageState extends State<QuotationReviewPage> {
                 Expanded(
                   child: CustomButton(
                     text: 'SUBMIT QUOTE',
-                    onPressed: _isSubmitting ? null : _handleSubmit,
+                    // Disable if cart is empty
+                    onPressed: (_isSubmitting || cartState.items.isEmpty) ? null : _handleSubmit,
                   ),
                 ),
               ],
@@ -110,13 +122,12 @@ class _QuotationReviewPageState extends State<QuotationReviewPage> {
           ),
         ),
 
-        // Global Blurred Loading Overlay
         if (_isSubmitting)
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 6.0, sigmaY: 6.0),
               child: Container(
-                color: Colors.black.withOpacity(0.3), // Slightly darker for better contrast
+                color: Colors.black.withOpacity(0.3),
                 child: Center(
                   child: Card(
                     elevation: 12,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
+import 'package:video_player/video_player.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 
@@ -10,33 +10,43 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+class _SplashScreenState extends State<SplashScreen> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
+    _initializeVideo();
+  }
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5, curve: Curves.easeIn)),
-    );
+  Future<void> _initializeVideo() async {
+    // Corrected path to assets/icons/logo_video.mp4 as per your setup
+    _controller = VideoPlayerController.asset('assets/icons/logo_video.mp4');
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.5, curve: Curves.easeOutBack)),
-    );
+    try {
+      await _controller.initialize();
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+        _controller.setLooping(false);
+        _controller.play();
 
-    _controller.forward().then((_) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) context.go(RouteNames.login);
-      });
-    });
+        // Wait for exactly 2500 ms as requested
+        await Future.delayed(const Duration(milliseconds: 2500));
+
+        if (mounted) {
+          // Navigate to the next screen (Login)
+          context.go(RouteNames.login);
+        }
+      }
+    } catch (e) {
+      debugPrint("Splash Video Error: $e");
+      // Fallback navigation in case of error (prevents getting stuck on loading)
+      await Future.delayed(const Duration(milliseconds: 3500));
+      if (mounted) context.go(RouteNames.login);
+    }
   }
 
   @override
@@ -48,41 +58,21 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black, // Recommended for video splash
       body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.shield_rounded,
-                  size: 100,
-                  color: AppColors.colorCompanyPrimary,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'fogshield',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppColors.colorCompanyPrimary,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 4,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'DEALER CONNECT',
-                  style: TextStyle(
-                    color: AppColors.disabledGrey,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-              ],
+        child: _isInitialized
+            ? SizedBox.expand(
+          child: FittedBox(
+            fit: BoxFit.cover, // Cover the whole screen
+            child: SizedBox(
+              width: _controller.value.size.width,
+              height: _controller.value.size.height,
+              child: VideoPlayer(_controller),
             ),
           ),
+        )
+            : const CircularProgressIndicator(
+          color: Colors.white,
         ),
       ),
     );

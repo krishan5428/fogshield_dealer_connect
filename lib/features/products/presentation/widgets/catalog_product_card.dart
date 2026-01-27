@@ -7,6 +7,7 @@ class CatalogProductCard extends StatelessWidget {
   final String name;
   final String model;
   final String coverage;
+  final String price;
   final String imagePath;
   final Color? accentColor;
 
@@ -15,6 +16,7 @@ class CatalogProductCard extends StatelessWidget {
     required this.name,
     required this.model,
     required this.coverage,
+    required this.price,
     required this.imagePath,
     this.accentColor,
   });
@@ -28,7 +30,7 @@ class CatalogProductCard extends StatelessWidget {
         onTap: () => context.push(RouteNames.productDetail),
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          height: 180,
+          height: 195, // Slightly taller for the price line
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.white,
@@ -37,8 +39,8 @@ class CatalogProductCard extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: AppColors.black.withOpacity(0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -55,7 +57,7 @@ class CatalogProductCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      coverage.toUpperCase(),
+                      coverage,
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.w900,
@@ -64,7 +66,7 @@ class CatalogProductCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Icon(Icons.arrow_outward_rounded, size: 16, color: AppColors.grey),
+                  const Icon(Icons.arrow_outward_rounded, size: 16, color: AppColors.grey),
                 ],
               ),
               const Spacer(),
@@ -73,10 +75,10 @@ class CatalogProductCard extends StatelessWidget {
                   tag: 'catalog_$model',
                   child: Image.asset(
                     imagePath,
-                    height: 60,
+                    height: 55,
                     errorBuilder: (context, error, stackTrace) => Icon(
                       Icons.shield_rounded,
-                      size: 50,
+                      size: 40,
                       color: themeColor.withOpacity(0.2),
                     ),
                   ),
@@ -89,17 +91,17 @@ class CatalogProductCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontWeight: FontWeight.w900,
-                  fontSize: 14,
+                  fontSize: 13,
                   color: AppColors.black,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
-                model,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.disabledGrey,
+                price,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: themeColor,
                 ),
               ),
             ],

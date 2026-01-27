@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
+import 'package:fogshield_dealer_connect/core/animations/page_transitions.dart'; // Ensure this import exists
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/login_page.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/signup_page.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/pages/dashboard_page.dart';
@@ -26,143 +27,257 @@ import 'package:fogshield_dealer_connect/features/notifications/presentation/pag
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/product_catalog_page.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/video_player_page.dart';
 import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
+import 'package:fogshield_dealer_connect/core/widgets/splash_screen.dart'; // Adjust path as needed
 
 class AppRouter {
   AppRouter._();
 
   static final GoRouter router = GoRouter(
-    initialLocation: RouteNames.login,
+    initialLocation: '/', // Start with the root for the splash screen
     debugLogDiagnostics: true,
     routes: [
+      // Splash Screen
+      GoRoute(
+        path: '/',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+
+      // Auth Routes with Slide Transition
       GoRoute(
         path: RouteNames.login,
         name: 'login',
-        builder: (context, state) => const LoginPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const LoginPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.signup,
         name: 'signup',
-        builder: (context, state) => const SignupPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const SignupPage(),
+        ),
       ),
+
+      // Dashboard
       GoRoute(
         path: RouteNames.dashboard,
         name: 'dashboard',
-        builder: (context, state) => const DashboardPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const DashboardPage(),
+        ),
       ),
+
+      // Profile Routes
       GoRoute(
         path: RouteNames.profile,
         name: 'profile',
-        builder: (context, state) => const ProfilePage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const ProfilePage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.editProfile,
         name: 'edit-profile',
-        builder: (context, state) => const EditProfilePage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const EditProfilePage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.helpSupport,
         name: 'help-support',
-        builder: (context, state) => const HelpSupportPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const HelpSupportPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.aboutUs,
         name: 'about-us',
-        builder: (context, state) => const AboutUsPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const AboutUsPage(),
+        ),
       ),
+
+      // Quotation Routes
       GoRoute(
         path: RouteNames.quotationForm,
         name: 'quotation-form',
-        builder: (context, state) => const QuotationFormPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const QuotationFormPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.productSelection,
         name: 'product-selection',
-        builder: (context, state) => const ProductSelectionPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const ProductSelectionPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.cart,
         name: 'cart',
-        builder: (context, state) => const CartPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const CartPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.quotationReview,
         name: 'quotation-review',
-        builder: (context, state) => const QuotationReviewPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const QuotationReviewPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.quotationHistory,
         name: 'quotation-history',
-        builder: (context, state) => const QuotationHistoryPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const QuotationHistoryPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.quotationDetail,
         name: 'quotation-detail',
-        builder: (context, state) => const QuotationDetailPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const QuotationDetailPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.quotationPdfViewer,
         name: 'quotation-pdf-viewer',
-        builder: (context, state) => const QuotationPdfViewerPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const QuotationPdfViewerPage(),
+        ),
       ),
+
+      // Product/Content Routes
       GoRoute(
         path: RouteNames.productCatalog,
         name: 'product-catalog',
-        builder: (context, state) => const ProductCatalogPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const ProductCatalogPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.productDetail,
         name: 'product-detail',
-        builder: (context, state) => const ProductDetailPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const ProductDetailPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.datasheets,
         name: 'datasheets',
-        builder: (context, state) => const DatasheetsPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const DatasheetsPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.datasheetViewer,
         name: 'datasheet-viewer',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final pdfUrl = state.extra as String?;
-          return DatasheetViewerPage(pdfUrl: pdfUrl);
+          return PageTransitions.slideTransition(
+            context: context,
+            state: state,
+            child: DatasheetViewerPage(pdfUrl: pdfUrl),
+          );
         },
       ),
       GoRoute(
         path: RouteNames.videoPlayer,
         name: 'video-player',
-        builder: (context, state) {
-          // Changed assetPath to videoUrl to match VideoPlayerPage parameters
+        pageBuilder: (context, state) {
           final videoUrl = state.extra as String?;
-          return VideoPlayerPage(videoUrl: videoUrl);
+          return PageTransitions.slideTransition(
+            context: context,
+            state: state,
+            child: VideoPlayerPage(videoUrl: videoUrl),
+          );
         },
       ),
       GoRoute(
         path: RouteNames.productPhotos,
         name: 'product-photos',
-        builder: (context, state) => const ProductPhotosPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const ProductPhotosPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.brochures,
         name: 'brochures',
-        builder: (context, state) => const BrochuresPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const BrochuresPage(),
+        ),
       ),
+
+      // Offers & Notifications
       GoRoute(
         path: RouteNames.offers,
         name: 'offers',
-        builder: (context, state) => const OffersPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const OffersPage(),
+        ),
       ),
       GoRoute(
         path: RouteNames.offerDetail,
         name: 'offer-detail',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final offer = state.extra as Offer?;
-          return OfferDetailPage(offer: offer);
+          return PageTransitions.slideTransition(
+            context: context,
+            state: state,
+            child: OfferDetailPage(offer: offer),
+          );
         },
       ),
       GoRoute(
         path: RouteNames.notifications,
         name: 'notifications',
-        builder: (context, state) => const NotificationsPage(),
+        pageBuilder: (context, state) => PageTransitions.slideTransition(
+          context: context,
+          state: state,
+          child: const NotificationsPage(),
+        ),
       ),
     ],
   );

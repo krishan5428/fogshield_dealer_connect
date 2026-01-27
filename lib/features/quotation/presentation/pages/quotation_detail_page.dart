@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
@@ -6,11 +7,11 @@ import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/status_timeline.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/quotation_status_badge.dart';
 
-class QuotationDetailPage extends StatelessWidget {
+class QuotationDetailPage extends ConsumerWidget {
   const QuotationDetailPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: CustomAppBar(
@@ -58,6 +59,7 @@ class QuotationDetailPage extends StatelessWidget {
               style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.0, color: AppColors.colorAccent),
             ),
             const SizedBox(height: 12),
+            // Updated to show current session data in real-time
             const QuotationSummary(),
             const SizedBox(height: 40),
           ],

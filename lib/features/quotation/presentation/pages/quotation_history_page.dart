@@ -14,7 +14,7 @@ class QuotationHistoryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: const CustomAppBar(title: 'Quotation Logs'),
+      appBar: const CustomAppBar(title: 'Quotation History'),
       body: Column(
         children: [
           Container(

@@ -10,6 +10,14 @@ class ProductDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // For this demonstration, we'll use data from the Pro 7000 (S.No 2 in CSV)
+    final String productName = 'FogSHIELD Pro 7000 ft³';
+    final String modelCode = 'SEC FSG1B MG4I';
+    final String description = 'IOT Fogging System Fog Generator. Suitable for fogging up to appx 7000 cubic feet volume with less than 1m visibility. Inbuilt multi-communication channel GSM, 4G & IP';
+    final String warranty = '1 YEAR WARRANTY';
+    final String endUserPrice = '₹1,19,872';
+    final String mrp = '₹1,41,449';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: const CustomAppBar(title: 'Product Details'),
@@ -19,7 +27,7 @@ class ProductDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const ProductImageCarousel(
-              images: const [
+              images: [
                 'assets/product/foggshield_image_1.png',
                 'assets/product/foggshield_image_2.png',
                 'assets/product/foggshield_image_3.png',
@@ -33,64 +41,74 @@ class ProductDetailPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.greenBg.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'IN STOCK',
-                          style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.w900),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              productName.toUpperCase(),
+                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                            ),
+                            Text(
+                              modelCode,
+                              style: const TextStyle(color: AppColors.disabledGrey, fontWeight: FontWeight.w600, fontSize: 13),
+                            ),
+                          ],
                         ),
                       ),
-                      const Text(
-                        'Ref: #SEC-FSG',
-                        style: TextStyle(color: AppColors.disabledGrey, fontWeight: FontWeight.w800, fontSize: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(8)),
+                        child: const Text('IN STOCK', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'SEC FSG1B MG4I Fogshield',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    '₹45,200',
-                    style: TextStyle(
-                      color: AppColors.colorCompanyPrimary,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 28,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  const Text(
-                    'TECHNICAL DESCRIPTION',
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: AppColors.colorAccent, letterSpacing: 1.0),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDetailItem(Icons.settings_overscan_rounded, 'Coverage: Up to 7,000 ft³'),
-                  _buildDetailItem(Icons.storefront_rounded, 'Compact, powerful and ideal for small shops, homes, offices, cabins and kiosks.'),
-                  _buildDetailItem(Icons.water_drop_outlined, '500 ml fluid'),
-                  _buildDetailItem(Icons.timer_outlined, '1–28 sec programmable fog emission'),
-                  _buildDetailItem(Icons.cell_tower_rounded, 'IoT control + 4G GSM + IP'),
-                  const SizedBox(height: 32),
-                  const Divider(),
                   const SizedBox(height: 24),
+
+                  // PRICING SECTION (End User Only)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('END USER PRICE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.colorAccent)),
+                          Text(endUserPrice, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.colorCompanyPrimary)),
+                        ],
+                      ),
+                      const SizedBox(width: 16),
+                      Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Text(
+                          'MRP: $mrp',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.disabledGrey,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      ),
+
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  const Divider(height: 1),
+                  const SizedBox(height: 24),
+
+                  const Text('SPECIFICATIONS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.colorAccent)),
+                  const SizedBox(height: 16),
+                  _buildDetailItem(Icons.verified_user_rounded, warranty),
+                  _buildDetailItem(Icons.info_outline_rounded, description),
+                  _buildDetailItem(Icons.bolt_rounded, 'Coverage: 7,000 Cubic Feet'),
+                  _buildDetailItem(Icons.cloud_done_rounded, 'Communication: GSM, 4G & IP Inbuilt'),
+
+                  const SizedBox(height: 32),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Select Quantity',
-                        style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-                      ),
-                      QuantitySelector(
-                        onChanged: (qty) {},
-                      ),
+                      const Text('QUANTITY', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+                      QuantitySelector(onChanged: (qty) {}),
                     ],
                   ),
                   const SizedBox(height: 40),
@@ -127,12 +145,7 @@ class ProductDetailPage extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                color: AppColors.black,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                height: 1.4,
-              ),
+              style: const TextStyle(color: AppColors.black, fontSize: 14, fontWeight: FontWeight.w500, height: 1.4),
             ),
           ),
         ],

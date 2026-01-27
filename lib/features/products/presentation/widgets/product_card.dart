@@ -8,12 +8,16 @@ class ProductCard extends StatelessWidget {
   final String name;
   final String price;
   final String imagePath;
+  final int quantity;
+  final Function(int) onQuantityChanged;
 
   const ProductCard({
     super.key,
     required this.name,
     required this.price,
     required this.imagePath,
+    required this.quantity,
+    required this.onQuantityChanged,
   });
 
   @override
@@ -82,9 +86,8 @@ class ProductCard extends StatelessWidget {
                         ),
                         // Quantity Selector on the far right
                         QuantitySelector(
-                          onChanged: (val) {
-                            // Add to cart logic
-                          },
+                          initialValue: quantity,
+                          onChanged: onQuantityChanged,
                         ),
                       ],
                     ),

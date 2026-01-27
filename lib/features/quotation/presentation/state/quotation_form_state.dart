@@ -1,8 +1,9 @@
+
 class QuotationFormState {
   final String customerName;
   final String phoneNumber;
   final String email;
-  final String gstNumber; // Added as requested
+  final String gstNumber;
   final String companyName;
   final String billingAddress;
   final String billingCity;
