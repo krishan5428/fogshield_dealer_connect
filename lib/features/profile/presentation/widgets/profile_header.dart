@@ -57,7 +57,7 @@ class ProfileHeader extends ConsumerWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Authorized Dealer • ID: FS-8821',
+          'Authorized Dealer • ID: ${profile.dealerId}',
           style: const TextStyle(
             color: AppColors.disabledGrey,
             fontWeight: FontWeight.w600,
@@ -65,5 +65,7 @@ class ProfileHeader extends ConsumerWidget {
         ),
       ],
     );
+
+
   }
 }

@@ -24,7 +24,6 @@ class ProfilePage extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: Column(
           children: [
-            // ProfileHeader now fetches its own data from profileProvider
             const ProfileHeader(),
             const SizedBox(height: 32),
             Padding(
@@ -58,10 +57,11 @@ class ProfilePage extends ConsumerWidget {
                     label: 'Company Name',
                     value: profile.companyName,
                   ),
-                  const ProfileInfoCard(
+                  // Updated GST Number to use value from profile state
+                  ProfileInfoCard(
                     icon: Icons.receipt_long_outlined,
                     label: 'GST Number',
-                    value: '07AAAAA0000A1Z5',
+                    value: profile.gstNumber,
                   ),
                   ProfileInfoCard(
                     icon: Icons.location_on_outlined,
@@ -91,5 +91,7 @@ class ProfilePage extends ConsumerWidget {
         ),
       ),
     );
+
+
   }
 }

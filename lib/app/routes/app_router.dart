@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
-import 'package:fogshield_dealer_connect/core/animations/page_transitions.dart'; // Ensure this import exists
+import 'package:fogshield_dealer_connect/core/animations/page_transitions.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/login_page.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/signup_page.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/pages/dashboard_page.dart';
@@ -27,23 +27,21 @@ import 'package:fogshield_dealer_connect/features/notifications/presentation/pag
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/product_catalog_page.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/video_player_page.dart';
 import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
-import 'package:fogshield_dealer_connect/core/widgets/splash_screen.dart'; // Adjust path as needed
+import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
+import 'package:fogshield_dealer_connect/core/widgets/splash_screen.dart';
 
 class AppRouter {
   AppRouter._();
 
   static final GoRouter router = GoRouter(
-    initialLocation: '/', // Start with the root for the splash screen
+    initialLocation: '/',
     debugLogDiagnostics: true,
     routes: [
-      // Splash Screen
       GoRoute(
         path: '/',
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
-
-      // Auth Routes with Slide Transition
       GoRoute(
         path: RouteNames.login,
         name: 'login',
@@ -62,8 +60,6 @@ class AppRouter {
           child: const SignupPage(),
         ),
       ),
-
-      // Dashboard
       GoRoute(
         path: RouteNames.dashboard,
         name: 'dashboard',
@@ -73,8 +69,6 @@ class AppRouter {
           child: const DashboardPage(),
         ),
       ),
-
-      // Profile Routes
       GoRoute(
         path: RouteNames.profile,
         name: 'profile',
@@ -111,8 +105,6 @@ class AppRouter {
           child: const AboutUsPage(),
         ),
       ),
-
-      // Quotation Routes
       GoRoute(
         path: RouteNames.quotationForm,
         name: 'quotation-form',
@@ -176,8 +168,6 @@ class AppRouter {
           child: const QuotationPdfViewerPage(),
         ),
       ),
-
-      // Product/Content Routes
       GoRoute(
         path: RouteNames.productCatalog,
         name: 'product-catalog',
@@ -187,15 +177,34 @@ class AppRouter {
           child: const ProductCatalogPage(),
         ),
       ),
+      // Fixed: Passing the product object from state.extra to ProductDetailPage
       GoRoute(
         path: RouteNames.productDetail,
         name: 'product-detail',
-        pageBuilder: (context, state) => PageTransitions.slideTransition(
-          context: context,
-          state: state,
-          child: const ProductDetailPage(),
-        ),
+        pageBuilder: (context, state) {
+          Product product;
+          bool showQuotationActions = false;
+
+          // Handle if extra is passed as a Map or just a Product
+          if (state.extra is Map<String, dynamic>) {
+            final map = state.extra as Map<String, dynamic>;
+            product = map['product'] as Product;
+            showQuotationActions = map['showQuotationActions'] as bool? ?? false;
+          } else {
+            product = state.extra as Product;
+          }
+
+          return PageTransitions.slideTransition(
+            context: context,
+            state: state,
+            child: ProductDetailPage(
+              product: product,
+              showQuotationActions: showQuotationActions,
+            ),
+          );
+        },
       ),
+
       GoRoute(
         path: RouteNames.datasheets,
         name: 'datasheets',
@@ -247,8 +256,6 @@ class AppRouter {
           child: const BrochuresPage(),
         ),
       ),
-
-      // Offers & Notifications
       GoRoute(
         path: RouteNames.offers,
         name: 'offers',

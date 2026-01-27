@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/quantity_selector.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
+import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
+import 'package:fogshield_dealer_connect/features/products/presentation/pages/product_detail_page.dart';
 
 class ProductCard extends StatelessWidget {
-  final String name;
-  final String price;
-  final String imagePath;
+  final Product product;
   final int quantity;
   final Function(int) onQuantityChanged;
 
   const ProductCard({
     super.key,
-    required this.name,
-    required this.price,
-    required this.imagePath,
+    required this.product,
     required this.quantity,
     required this.onQuantityChanged,
   });
@@ -30,13 +26,23 @@ class ProductCard extends StatelessWidget {
         border: Border.all(color: AppColors.grey.withOpacity(0.2)),
       ),
       child: InkWell(
-        onTap: () => context.push(RouteNames.productDetail),
+        onTap: () {
+          // Navigating from Quotation Flow: Pass showQuotationActions: true
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailPage(
+                product: product,
+                showQuotationActions: true,
+              ),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Row(
             children: [
-              // 1st Column: Large Icon/Image
               Container(
                 width: 70,
                 height: 70,
@@ -47,7 +53,7 @@ class ProductCard extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.asset(
-                    imagePath,
+                    product.imagePath,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.shield_rounded,
@@ -58,13 +64,12 @@ class ProductCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              // 2nd Column: Name (Top) and Price (Bottom)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      name,
+                      '${product.name} (${product.model})',
                       style: const TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 14,
@@ -77,14 +82,13 @@ class ProductCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          price,
+                          product.formattedPrice,
                           style: const TextStyle(
                             color: AppColors.colorCompanyPrimary,
                             fontWeight: FontWeight.w900,
                             fontSize: 16,
                           ),
                         ),
-                        // Quantity Selector on the far right
                         QuantitySelector(
                           initialValue: quantity,
                           onChanged: onQuantityChanged,

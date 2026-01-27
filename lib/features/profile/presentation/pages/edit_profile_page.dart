@@ -22,6 +22,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   late TextEditingController _phoneController;
   late TextEditingController _companyController;
   late TextEditingController _addressController;
+  late TextEditingController _gstController;
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     _phoneController = TextEditingController(text: profile.phone);
     _companyController = TextEditingController(text: profile.companyName);
     _addressController = TextEditingController(text: profile.address);
+    _gstController = TextEditingController(text: profile.gstNumber);
   }
 
   @override
@@ -41,27 +43,33 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     _phoneController.dispose();
     _companyController.dispose();
     _addressController.dispose();
+    _gstController.dispose();
     super.dispose();
   }
 
-  void _saveChanges() {
+  void _saveChanges() async {
     if (_formKey.currentState!.validate()) {
-      ref.read(profileProvider.notifier).updateProfile(
+// The updateProfile method now handles persistent storage internally
+      await ref.read(profileProvider.notifier).updateProfile(
         name: _nameController.text,
         email: _emailController.text,
         phone: _phoneController.text,
         companyName: _companyController.text,
         address: _addressController.text,
+        gstNumber: _gstController.text,
       );
 
-      CustomSnackbar.showSuccess(
-        context: context,
-        title: 'Profile Updated',
-        message: 'Your changes have been saved successfully.',
-      );
-
-      Navigator.pop(context);
+      if (mounted) {
+        CustomSnackbar.showSuccess(
+          context: context,
+          title: 'Profile Updated',
+          message: 'Your changes have been saved securely.',
+        );
+        Navigator.pop(context);
+      }
     }
+
+
   }
 
   @override
@@ -101,6 +109,13 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                 label: 'Company Name',
                 controller: _companyController,
                 prefixIcon: Icons.business,
+              ),
+              const SizedBox(height: 20),
+              CustomTextField(
+                label: 'GST Number',
+                hint: 'e.g. 07AAAAA0000A1Z5',
+                controller: _gstController,
+                prefixIcon: Icons.receipt_long_outlined,
               ),
               const SizedBox(height: 20),
               CustomTextField(

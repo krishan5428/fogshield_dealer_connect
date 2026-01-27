@@ -9,7 +9,6 @@ class ProductGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Dynamically uses the full list from product_model.dart
     final products = fogShieldProducts;
 
     return ListView.builder(
@@ -21,12 +20,9 @@ class ProductGrid extends ConsumerWidget {
         final quantity = ref.watch(cartProvider.notifier).getQuantity(product.model);
 
         return ProductCard(
-          name: '${product.name} (${product.model})',
-          price: product.formattedPrice,
-          imagePath: product.imagePath,
+          product: product,
           quantity: quantity,
           onQuantityChanged: (newQty) {
-            // Using updateProductQuantity to keep code clean
             ref.read(cartProvider.notifier).updateProductQuantity(
                 product: product,
                 quantity: newQty

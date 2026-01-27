@@ -14,7 +14,7 @@ class LoginPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Listen for state changes to show errors or navigate
+// Listens for authentication status changes
     ref.listen(authProvider, (previous, next) {
       if (next.status == AuthStatus.error) {
         CustomSnackbar.showError(
@@ -23,9 +23,23 @@ class LoginPage extends ConsumerWidget {
           message: next.errorMessage,
         );
       } else if (next.status == AuthStatus.authenticated) {
+// Navigate to dashboard if login is successful or session found
         context.go(RouteNames.dashboard);
       }
     });
+
+    final authState = ref.watch(authProvider);
+
+// Show a loading indicator while checking secure storage on app launch
+    if (authState.status == AuthStatus.initial) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.colorCompanyPrimary,
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -78,5 +92,7 @@ class LoginPage extends ConsumerWidget {
         ),
       ),
     );
+
+
   }
 }

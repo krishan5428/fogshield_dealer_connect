@@ -4,33 +4,32 @@ import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_image_carousel.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/quantity_selector.dart';
+import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
 
 class ProductDetailPage extends StatelessWidget {
-  const ProductDetailPage({super.key});
+  final Product product;
+  final bool showQuotationActions; // New flag to control visibility
+
+  const ProductDetailPage({
+    super.key,
+    required this.product,
+    this.showQuotationActions = false, // Defaults to false for catalog/sidebar view
+  });
 
   @override
   Widget build(BuildContext context) {
-    // For this demonstration, we'll use data from the Pro 7000 (S.No 2 in CSV)
-    final String productName = 'FogSHIELD Pro 7000 ft³';
-    final String modelCode = 'SEC FSG1B MG4I';
-    final String description = 'IOT Fogging System Fog Generator. Suitable for fogging up to appx 7000 cubic feet volume with less than 1m visibility. Inbuilt multi-communication channel GSM, 4G & IP';
-    final String warranty = '1 YEAR WARRANTY';
-    final String endUserPrice = '₹1,19,872';
-    final String mrp = '₹1,41,449';
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: const CustomAppBar(title: 'Product Details'),
+      appBar: CustomAppBar(title: product.name),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const ProductImageCarousel(
+            ProductImageCarousel(
               images: [
-                'assets/product/foggshield_image_1.png',
-                'assets/product/foggshield_image_2.png',
-                'assets/product/foggshield_image_3.png',
+                product.imagePath,
+                'assets/product/foggshield_image_1.png', // Secondary view mockup
               ],
             ),
             Padding(
@@ -46,11 +45,11 @@ class ProductDetailPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              productName.toUpperCase(),
+                              product.name.toUpperCase(),
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
                             ),
                             Text(
-                              modelCode,
+                              product.model,
                               style: const TextStyle(color: AppColors.disabledGrey, fontWeight: FontWeight.w600, fontSize: 13),
                             ),
                           ],
@@ -59,13 +58,13 @@ class ProductDetailPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(8)),
-                        child: const Text('IN STOCK', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
+                        child: const Text('AVAILABLE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
 
-                  // PRICING SECTION (End User Only)
+                  // PRICING SECTION
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -73,14 +72,14 @@ class ProductDetailPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('END USER PRICE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.colorAccent)),
-                          Text(endUserPrice, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.colorCompanyPrimary)),
+                          Text(product.formattedPrice, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.colorCompanyPrimary)),
                         ],
                       ),
                       const SizedBox(width: 16),
                       Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: Text(
-                          'MRP: $mrp',
+                          'MRP: ${product.formattedMrp}',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -89,7 +88,6 @@ class ProductDetailPage extends StatelessWidget {
                           ),
                         ),
                       ),
-
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -98,33 +96,36 @@ class ProductDetailPage extends StatelessWidget {
 
                   const Text('SPECIFICATIONS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.colorAccent)),
                   const SizedBox(height: 16),
-                  _buildDetailItem(Icons.verified_user_rounded, warranty),
-                  _buildDetailItem(Icons.info_outline_rounded, description),
-                  _buildDetailItem(Icons.bolt_rounded, 'Coverage: 7,000 Cubic Feet'),
-                  _buildDetailItem(Icons.cloud_done_rounded, 'Communication: GSM, 4G & IP Inbuilt'),
+                  _buildDetailItem(Icons.verified_user_rounded, 'Warranty: ${product.warranty} Year(s)'),
+                  _buildDetailItem(Icons.info_outline_rounded, product.description),
+                  _buildDetailItem(Icons.bolt_rounded, 'Coverage Area: ${product.coverage}'),
+                  _buildDetailItem(Icons.category_rounded, 'Category: ${product.category} Series'),
 
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('QUANTITY', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
-                      QuantitySelector(onChanged: (qty) {}),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-                  CustomButton(
-                    text: 'ADD TO QUOTATION',
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icons.add_chart_rounded,
-                  ),
-                  const SizedBox(height: 12),
-                  CustomButton(
-                    text: 'TECHNICAL DATASHEET',
-                    isOutlined: true,
-                    onPressed: () {},
-                    icon: Icons.file_download_outlined,
-                  ),
-                  const SizedBox(height: 40),
+                  // Conditional Section for Quotation Flow
+                  if (showQuotationActions) ...[
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('ORDER QUANTITY', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
+                        QuantitySelector(onChanged: (qty) {}),
+                      ],
+                    ),
+                    const SizedBox(height: 40),
+                    CustomButton(
+                      text: 'ADD TO QUOTATION',
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icons.add_chart_rounded,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomButton(
+                      text: 'DOWNLOAD DATASHEET',
+                      isOutlined: true,
+                      onPressed: () {},
+                      icon: Icons.file_download_outlined,
+                    ),
+                    const SizedBox(height: 40),
+                  ],
                 ],
               ),
             ),

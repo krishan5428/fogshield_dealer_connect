@@ -4,7 +4,9 @@ class ProfileState {
   final String phone;
   final String companyName;
   final String address;
-  final String? profileImage; // Stores the local path or URL
+  final String dealerId;
+  final String gstNumber; // Added GST Number field
+  final String? profileImage;
 
   ProfileState({
     required this.name,
@@ -12,6 +14,8 @@ class ProfileState {
     required this.phone,
     required this.companyName,
     required this.address,
+    required this.dealerId,
+    required this.gstNumber, // Added to constructor
     this.profileImage,
   });
 
@@ -21,6 +25,8 @@ class ProfileState {
     String? phone,
     String? companyName,
     String? address,
+    String? dealerId,
+    String? gstNumber, // Added to copyWith
     String? profileImage,
   }) {
     return ProfileState(
@@ -29,6 +35,8 @@ class ProfileState {
       phone: phone ?? this.phone,
       companyName: companyName ?? this.companyName,
       address: address ?? this.address,
+      dealerId: dealerId ?? this.dealerId,
+      gstNumber: gstNumber ?? this.gstNumber, // Map to field
       profileImage: profileImage ?? this.profileImage,
     );
   }
