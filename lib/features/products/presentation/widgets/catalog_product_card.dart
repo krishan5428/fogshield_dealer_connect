@@ -2,22 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
+import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
+import 'package:fogshield_dealer_connect/features/products/presentation/pages/product_detail_page.dart';
 
 class CatalogProductCard extends StatelessWidget {
-  final String name;
-  final String model;
-  final String coverage;
-  final String price;
-  final String imagePath;
+  final Product product;
   final Color? accentColor;
 
   const CatalogProductCard({
     super.key,
-    required this.name,
-    required this.model,
-    required this.coverage,
-    required this.price,
-    required this.imagePath,
+    required this.product,
     this.accentColor,
   });
 
@@ -27,10 +21,21 @@ class CatalogProductCard extends StatelessWidget {
 
     return Expanded(
       child: InkWell(
-        onTap: () => context.push(RouteNames.productDetail),
+        onTap: () {
+          // Navigating from Catalog: Pass showQuotationActions: false
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailPage(
+                product: product,
+                showQuotationActions: false,
+              ),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          height: 195, // Slightly taller for the price line
+          height: 200,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.white,
@@ -57,7 +62,7 @@ class CatalogProductCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      coverage,
+                      product.coverage,
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.w900,
@@ -72,9 +77,9 @@ class CatalogProductCard extends StatelessWidget {
               const Spacer(),
               Center(
                 child: Hero(
-                  tag: 'catalog_$model',
+                  tag: 'catalog_${product.model}',
                   child: Image.asset(
-                    imagePath,
+                    product.imagePath,
                     height: 55,
                     errorBuilder: (context, error, stackTrace) => Icon(
                       Icons.shield_rounded,
@@ -86,7 +91,7 @@ class CatalogProductCard extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                name,
+                product.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -97,7 +102,7 @@ class CatalogProductCard extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                price,
+                product.formattedPrice,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,

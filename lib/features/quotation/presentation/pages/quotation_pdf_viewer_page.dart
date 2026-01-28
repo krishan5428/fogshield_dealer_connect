@@ -1,62 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
-import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
-import 'package:fogshield_dealer_connect/features/quotation/presentation/providers/quotation_form_providers.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/pdf_service.dart';
+import 'package:fogshield_dealer_connect/features/quotation/presentation/pages/quotation_detail_page.dart';
 import 'dart:typed_data';
 
 class QuotationPdfViewerPage extends ConsumerWidget {
-  const QuotationPdfViewerPage({super.key});
+  final String quotationId;
 
-  Future<void> _handlePrint(Uint8List bytes) async {
-    await Printing.layoutPdf(onLayout: (format) => bytes);
-  }
-
-  Future<void> _handleShare(Uint8List bytes) async {
-    await Printing.sharePdf(bytes: bytes, filename: 'quotation.pdf');
-  }
+  const QuotationPdfViewerPage({super.key, required this.quotationId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cartState = ref.watch(cartProvider);
-    final formState = ref.watch(quotationFormProvider);
+    // Reuse the detail provider to get DB data
+    final detailAsync = ref.watch(quotationDetailProvider(quotationId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Quotation Preview'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.print),
-            onPressed: () async {
-              final bytes = await PdfService.generateQuotationPdf(formState, cartState);
-              await _handlePrint(bytes);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () async {
-              final bytes = await PdfService.generateQuotationPdf(formState, cartState);
-              await _handleShare(bytes);
-            },
-          ),
-        ],
-      ),
-      body: PdfPreview(
-        build: (format) => PdfService.generateQuotationPdf(formState, cartState),
-        useActions: false,
-        canChangePageFormat: false,
-        canChangeOrientation: false,
-        canDebug: false,
-        pdfPreviewPageDecoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
+      appBar: AppBar(title: const Text('Quotation Preview')),
+      body: detailAsync.when(
+        data: (data) => PdfPreview(
+          build: (format) => PdfService.generateQuotationPdfFromDb(data.quote, data.items),
+          useActions: true, // Shows standard print/share actions
+          canChangePageFormat: false,
         ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }

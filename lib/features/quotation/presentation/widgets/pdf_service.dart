@@ -1,194 +1,123 @@
 import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:fogshield_dealer_connect/features/cart/presentation/state/cart_state.dart';
-import 'package:fogshield_dealer_connect/features/quotation/presentation/state/quotation_form_state.dart';
+import 'package:fogshield_dealer_connect/core/database/app_database.dart';
 
 class PdfService {
-  static Future<Uint8List> generateQuotationPdf(
-      QuotationFormState customer,
-      CartState cart,
+  /// NEW METHOD: Generates PDF using database models instead of session state
+  static Future<Uint8List> generateQuotationPdfFromDb(
+      Quotation quote,
+      List<QuotationItem> items,
       ) async {
     final pdf = pw.Document();
 
-    // Determine the shipping display values
-    final String shippingAddr = customer.sameAsBilling ? customer.billingAddress : customer.shippingAddress;
-    final String shippingCity = customer.sameAsBilling ? customer.billingCity : customer.shippingCity;
-    final String shippingState = customer.sameAsBilling ? customer.billingState : customer.shippingState;
+    // Load app icon
+    final logoBytes = await rootBundle.load('assets/icons/app_icon.png');
+    final logo = pw.MemoryImage(logoBytes.buffer.asUint8List());
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
-        build: (pw.Context context) {
-          return [
-            // Header: Company Info
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('FOGSHIELD',
-                        style: pw.TextStyle(
-                            fontSize: 24,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColors.blue900)),
-                    pw.Text('Professional Security Solutions'),
-                  ],
-                ),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text('QUOTATION',
-                        style: pw.TextStyle(
-                            fontSize: 20, fontWeight: pw.FontWeight.bold)),
-                    pw.Text(
-                        'Date: ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}'),
-                    pw.Text('Quote #: QT-2026-0082'),
-                  ],
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 30),
+        margin: const pw.EdgeInsets.all(40),
+        build: (context) => [
+          /// HEADER
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Image(logo, width: 70),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text('QUOTATION', style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold)),
+                  pw.SizedBox(height: 6),
+                  pw.Text('Date: ${_formatDate(quote.createdAt)}', style: const pw.TextStyle(fontSize: 10)),
+                  pw.Text('Quote #: ${quote.id}', style: const pw.TextStyle(fontSize: 10)),
+                ],
+              ),
+            ],
+          ),
 
-            // Billing & Shipping Info
-            pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('BILL TO:',
-                          style: pw.TextStyle(
-                              fontWeight: pw.FontWeight.bold, fontSize: 10)),
-                      pw.Text(customer.customerName.isEmpty
-                          ? 'N/A'
-                          : customer.customerName),
-                      if (customer.companyName.isNotEmpty)
-                        pw.Text(customer.companyName),
-                      pw.Text(customer.billingAddress),
-                      pw.Text(
-                          '${customer.billingCity}, ${customer.billingState}'),
-                      pw.Text('Phone: ${customer.phoneNumber}'),
-                    ],
-                  ),
-                ),
-                pw.Expanded(
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('SHIP TO:',
-                          style: pw.TextStyle(
-                              fontWeight: pw.FontWeight.bold, fontSize: 10)),
-                      // Instead of "Same as Billing", we show the actual address
-                      pw.Text(customer.customerName.isEmpty
-                          ? 'N/A'
-                          : customer.customerName),
-                      pw.Text(shippingAddr),
-                      pw.Text('$shippingCity, $shippingState'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 30),
+          pw.SizedBox(height: 35),
 
-            // Products Table
-            pw.TableHelper.fromTextArray(
-              border: null,
-              headerStyle: pw.TextStyle(
-                  fontWeight: pw.FontWeight.bold, color: PdfColors.white),
-              headerDecoration: const pw.BoxDecoration(color: PdfColors.blue900),
-              cellHeight: 30,
-              cellAlignments: {
-                0: pw.Alignment.centerLeft,
-                1: pw.Alignment.center,
-                2: pw.Alignment.centerRight,
-                3: pw.Alignment.centerRight,
-              },
-              headerCellDecoration:
-              const pw.BoxDecoration(color: PdfColors.blueGrey800),
-              headers: ['Product Name', 'Qty', 'Unit Price', 'Total'],
-              data: cart.items.map((item) {
-                return [
-                  item.name,
-                  item.quantity.toString(),
-                  'INR ${item.price.toStringAsFixed(0)}',
-                  'INR ${item.total.toStringAsFixed(0)}',
-                ];
+          /// CUSTOMER INFO
+          pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('BILL TO:', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+              pw.Text(quote.customerName, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              pw.Text('Phone: ${quote.phoneNumber}'),
+              if (quote.gstNumber != null) pw.Text('GST: ${quote.gstNumber}'),
+            ],
+          ),
+
+          pw.SizedBox(height: 35),
+
+          /// TABLE
+          pw.Table(
+            border: pw.TableBorder(horizontalInside: pw.BorderSide(color: PdfColors.grey300)),
+            children: [
+              _tableHeader(),
+              ...items.map((item) {
+                return pw.TableRow(
+                  children: [
+                    _cell(item.productModel),
+                    _cell(item.quantity.toString(), align: pw.TextAlign.center),
+                    _cell('INR ${item.priceAtTimeOfSale.toStringAsFixed(0)}', align: pw.TextAlign.right),
+                    _cell('INR ${(item.quantity * item.priceAtTimeOfSale).toStringAsFixed(0)}', align: pw.TextAlign.right),
+                  ],
+                );
               }).toList(),
+            ],
+          ),
+
+          pw.SizedBox(height: 20),
+
+          /// TOTAL
+          pw.Align(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Container(
+              width: 200,
+              padding: const pw.EdgeInsets.all(10),
+              color: PdfColors.black,
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Grand Total', style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold)),
+                  pw.Text('INR ${quote.totalAmount.toStringAsFixed(0)}', style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
             ),
-
-            pw.Divider(thickness: 1, color: PdfColors.grey300),
-
-            // Summary Totals
-            pw.Row(
-              children: [
-                pw.Spacer(flex: 2),
-                pw.Expanded(
-                  flex: 1,
-                  child: pw.Column(
-                    children: [
-                      pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                        children: [
-                          pw.Text('Subtotal:'),
-                          pw.Text('INR ${cart.subtotal.toStringAsFixed(0)}'),
-                        ],
-                      ),
-                      if (cart.discountAmount > 0)
-                        pw.Row(
-                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                          children: [
-                            pw.Text('Discount:'),
-                            pw.Text(
-                                '-INR ${cart.discountAmount.toStringAsFixed(0)}',
-                                style: const pw.TextStyle(
-                                    color: PdfColors.green)),
-                          ],
-                        ),
-                      pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                        children: [
-                          pw.Text('GST (18%):'),
-                          pw.Text('INR ${cart.tax.toStringAsFixed(0)}'),
-                        ],
-                      ),
-                      pw.Divider(),
-                      pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                        children: [
-                          pw.Text('Grand Total:',
-                              style: pw.TextStyle(
-                                  fontWeight: pw.FontWeight.bold,
-                                  fontSize: 14)),
-                          pw.Text('INR ${cart.total.toStringAsFixed(0)}',
-                              style: pw.TextStyle(
-                                  fontWeight: pw.FontWeight.bold,
-                                  fontSize: 14,
-                                  color: PdfColors.blue900)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            pw.SizedBox(height: 50),
-            pw.Text('Terms & Conditions:',
-                style:
-                pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
-            pw.Bullet(text: 'Quotations are valid for 30 days.'),
-            pw.Bullet(
-                text: 'Standard warranty applicable as per product guidelines.'),
-          ];
-        },
+          ),
+        ],
       ),
     );
 
     return pdf.save();
   }
+
+  static pw.TableRow _tableHeader() {
+    return pw.TableRow(
+      decoration: const pw.BoxDecoration(color: PdfColors.black),
+      children: [
+        _headerCell('Product Model'),
+        _headerCell('Qty', align: pw.TextAlign.center),
+        _headerCell('Unit Price', align: pw.TextAlign.right),
+        _headerCell('Total', align: pw.TextAlign.right),
+      ],
+    );
+  }
+
+  static pw.Widget _headerCell(String text, {pw.TextAlign align = pw.TextAlign.left}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(8),
+      child: pw.Text(text, textAlign: align, style: pw.TextStyle(color: PdfColors.white, fontWeight: pw.FontWeight.bold, fontSize: 10)),
+    );
+  }
+
+  static pw.Widget _cell(String text, {pw.TextAlign align = pw.TextAlign.left}) {
+    return pw.Padding(padding: const pw.EdgeInsets.all(8), child: pw.Text(text, textAlign: align, style: const pw.TextStyle(fontSize: 10)));
+  }
+
+  static String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
 }

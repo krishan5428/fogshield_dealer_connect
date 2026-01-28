@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/core/widgets/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
-import 'package:fogshield_dealer_connect/core/animations/page_transitions.dart'; // Ensure this import exists
+import 'package:fogshield_dealer_connect/core/animations/page_transitions.dart';
+import 'package:fogshield_dealer_connect/features/auth/presentation/providers/auth_providers.dart';
+import 'package:fogshield_dealer_connect/features/auth/presentation/state/auth_state.dart';
+import 'package:fogshield_dealer_connect/features/profile/presentation/providers/profile_providers.dart';
+
+// Pages
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/login_page.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/signup_page.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/pages/dashboard_page.dart';
@@ -26,24 +33,56 @@ import 'package:fogshield_dealer_connect/features/offers/presentation/pages/offe
 import 'package:fogshield_dealer_connect/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/product_catalog_page.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/video_player_page.dart';
+
+// Models
 import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
-import 'package:fogshield_dealer_connect/core/widgets/splash_screen.dart'; // Adjust path as needed
+import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
 
-class AppRouter {
-  AppRouter._();
+final routerProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authProvider);
+  final profileState = ref.watch(profileProvider);
 
-  static final GoRouter router = GoRouter(
-    initialLocation: '/', // Start with the root for the splash screen
+  return GoRouter(
+    initialLocation: '/',
+    refreshListenable: AuthRefreshListenable(ref),
     debugLogDiagnostics: true,
+
+    redirect: (context, state) {
+      final status = authState.status;
+      final isAtSplash = state.matchedLocation == '/';
+      final isLoggingIn = state.matchedLocation == RouteNames.login;
+      final isSigningUp = state.matchedLocation == RouteNames.signup;
+
+      if (isAtSplash) return null;
+
+      if (status == AuthStatus.initial || status == AuthStatus.loading) {
+        return null;
+      }
+
+      if (status == AuthStatus.unauthenticated) {
+        if (isLoggingIn || isSigningUp) return null;
+        return RouteNames.login;
+      }
+
+      if (status == AuthStatus.authenticated) {
+        if (profileState.name == 'Loading...') {
+          return null;
+        }
+
+        if (isLoggingIn || isSigningUp) {
+          return RouteNames.dashboard;
+        }
+      }
+
+      return null;
+    },
+
     routes: [
-      // Splash Screen
       GoRoute(
         path: '/',
         name: 'splash',
         builder: (context, state) => const SplashScreen(),
       ),
-
-      // Auth Routes with Slide Transition
       GoRoute(
         path: RouteNames.login,
         name: 'login',
@@ -62,8 +101,6 @@ class AppRouter {
           child: const SignupPage(),
         ),
       ),
-
-      // Dashboard
       GoRoute(
         path: RouteNames.dashboard,
         name: 'dashboard',
@@ -73,8 +110,6 @@ class AppRouter {
           child: const DashboardPage(),
         ),
       ),
-
-      // Profile Routes
       GoRoute(
         path: RouteNames.profile,
         name: 'profile',
@@ -111,8 +146,6 @@ class AppRouter {
           child: const AboutUsPage(),
         ),
       ),
-
-      // Quotation Routes
       GoRoute(
         path: RouteNames.quotationForm,
         name: 'quotation-form',
@@ -161,23 +194,28 @@ class AppRouter {
       GoRoute(
         path: RouteNames.quotationDetail,
         name: 'quotation-detail',
-        pageBuilder: (context, state) => PageTransitions.slideTransition(
-          context: context,
-          state: state,
-          child: const QuotationDetailPage(),
-        ),
+        pageBuilder: (context, state) {
+          final quotationId = state.extra as String? ?? '';
+          return PageTransitions.slideTransition(
+            context: context,
+            state: state,
+            child: QuotationDetailPage(quotationId: quotationId),
+          );
+        },
       ),
+      // ✅ Fixed PDF Viewer Route to accept and pass quotationId
       GoRoute(
         path: RouteNames.quotationPdfViewer,
         name: 'quotation-pdf-viewer',
-        pageBuilder: (context, state) => PageTransitions.slideTransition(
-          context: context,
-          state: state,
-          child: const QuotationPdfViewerPage(),
-        ),
+        pageBuilder: (context, state) {
+          final quotationId = state.extra as String? ?? '';
+          return PageTransitions.slideTransition(
+            context: context,
+            state: state,
+            child: QuotationPdfViewerPage(quotationId: quotationId),
+          );
+        },
       ),
-
-      // Product/Content Routes
       GoRoute(
         path: RouteNames.productCatalog,
         name: 'product-catalog',
@@ -190,11 +228,27 @@ class AppRouter {
       GoRoute(
         path: RouteNames.productDetail,
         name: 'product-detail',
-        pageBuilder: (context, state) => PageTransitions.slideTransition(
-          context: context,
-          state: state,
-          child: const ProductDetailPage(),
-        ),
+        pageBuilder: (context, state) {
+          Product product;
+          bool showQuotationActions = false;
+
+          if (state.extra is Map<String, dynamic>) {
+            final map = state.extra as Map<String, dynamic>;
+            product = map['product'] as Product;
+            showQuotationActions = map['showQuotationActions'] as bool? ?? false;
+          } else {
+            product = state.extra as Product;
+          }
+
+          return PageTransitions.slideTransition(
+            context: context,
+            state: state,
+            child: ProductDetailPage(
+              product: product,
+              showQuotationActions: showQuotationActions,
+            ),
+          );
+        },
       ),
       GoRoute(
         path: RouteNames.datasheets,
@@ -247,8 +301,6 @@ class AppRouter {
           child: const BrochuresPage(),
         ),
       ),
-
-      // Offers & Notifications
       GoRoute(
         path: RouteNames.offers,
         name: 'offers',
@@ -280,5 +332,15 @@ class AppRouter {
         ),
       ),
     ],
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(child: Text('Navigation Error: ${state.error}')),
+    ),
   );
+});
+
+class AuthRefreshListenable extends ChangeNotifier {
+  AuthRefreshListenable(Ref ref) {
+    ref.listen(authProvider, (_, __) => notifyListeners());
+    ref.listen(profileProvider, (_, __) => notifyListeners());
+  }
 }

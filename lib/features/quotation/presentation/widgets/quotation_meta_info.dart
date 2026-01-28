@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
 class QuotationMetaInfo extends StatelessWidget {
-  const QuotationMetaInfo({super.key});
+  final String quotationId;
+  final DateTime date;
+
+  const QuotationMetaInfo({
+    super.key,
+    required this.quotationId,
+    required this.date,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +24,8 @@ class QuotationMetaInfo extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildMetaItem('Quotation ID', 'QT-2026-0082', context),
-          _buildMetaItem('Date', '22 Jan 2026', context),
+          _buildMetaItem('Quotation ID', quotationId, context),
+          _buildMetaItem('Date', DateFormat('dd MMM yyyy').format(date), context),
           _buildMetaItem('Validity', '30 Days', context),
         ],
       ),

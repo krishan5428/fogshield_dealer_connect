@@ -1,42 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
+import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
 
-class CategoryChips extends StatefulWidget {
+class CategoryChips extends ConsumerWidget {
   const CategoryChips({super.key});
 
   @override
-  State<CategoryChips> createState() => _CategoryChipsState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Current filter value from provider
+    final selectedCategory = ref.watch(selectedCategoryProvider);
 
-class _CategoryChipsState extends State<CategoryChips> {
-  int _selectedIndex = 0;
-  final List<String> _categories = [
-    'All Products',
-    'Fogshield Pro',
-    'Fogshield Nexus',
-    'Fogshield Edge',
-    'Fogging Fluid',
-    'Accessories'
-  ];
+    // Map chip names to our internal Category IDs
+    final List<Map<String, String>> categories = [
+      {'label': 'All Products', 'id': 'ALL'},
+      {'label': 'Fogshield Pro', 'id': 'PRO'},
+      {'label': 'Fogshield Nexus', 'id': 'NEXUS'},
+      {'label': 'Fogging Fluid', 'id': 'FLUID'},
+      {'label': 'Accessories', 'id': 'ACCESSORY'},
+      {'label': 'Software/Services', 'id': 'SOFTWARE'},
+    ];
 
-  @override
-  Widget build(BuildContext context) {
     return Container(
       height: 54,
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _categories.length,
+        itemCount: categories.length,
         itemBuilder: (context, index) {
-          final isSelected = _selectedIndex == index;
+          final category = categories[index];
+          final isSelected = selectedCategory == category['id'];
+
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: ChoiceChip(
-              label: Text(_categories[index].toUpperCase()),
+              label: Text(category['label']!.toUpperCase()),
               selected: isSelected,
               onSelected: (selected) {
-                setState(() => _selectedIndex = index);
+                // Update the global filter provider
+                ref.read(selectedCategoryProvider.notifier).state = category['id']!;
               },
               selectedColor: AppColors.colorCompanyPrimary,
               backgroundColor: AppColors.white,

@@ -1,17 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
+import 'package:fogshield_dealer_connect/core/database/app_database_tables.dart' as tables;
 
 class StatusTimeline extends StatelessWidget {
-  const StatusTimeline({super.key});
+  final DateTime createdAt;
+  final tables.QuotationStatus status;
+
+  const StatusTimeline({
+    super.key,
+    required this.createdAt,
+    required this.status,
+  });
 
   @override
   Widget build(BuildContext context) {
+    bool isSent = status.index >= tables.QuotationStatus.sent.index;
+    bool isAccepted = status == tables.QuotationStatus.accepted;
+
     return Column(
       children: [
-        _buildTimelineItem('Quotation Created', '22 Jan, 09:15 AM', true, true),
-        _buildTimelineItem('Sent to Customer', '22 Jan, 10:30 AM', true, true),
-        _buildTimelineItem('Customer Opened', '23 Jan, 11:45 AM', true, true),
-        _buildTimelineItem('Accepted', '--', false, false),
+        _buildTimelineItem(
+            'Quotation Created',
+            DateFormat('dd MMM, hh:mm a').format(createdAt),
+            true,
+            true
+        ),
+        _buildTimelineItem(
+            'Sent to Customer',
+            isSent ? DateFormat('dd MMM, hh:mm a').format(createdAt.add(const Duration(minutes: 5))) : '--',
+            isSent,
+            true
+        ),
+        _buildTimelineItem(
+            'Accepted',
+            isAccepted ? 'Confirmed' : '--',
+            isAccepted,
+            false
+        ),
       ],
     );
   }

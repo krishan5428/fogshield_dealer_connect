@@ -21,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initializeVideo() async {
-    // Corrected path to assets/icons/logo_video.mp4 as per your setup
+    // Path to your splash video asset
     _controller = VideoPlayerController.asset('assets/icons/logo_video.mp4');
 
     try {
@@ -33,17 +33,19 @@ class _SplashScreenState extends State<SplashScreen> {
         _controller.setLooping(false);
         _controller.play();
 
-        // Wait for exactly 2500 ms as requested
-        await Future.delayed(const Duration(milliseconds: 2500));
+        // Updated delay to exactly 3500 ms
+        await Future.delayed(const Duration(milliseconds: 3500));
 
         if (mounted) {
-          // Navigate to the next screen (Login)
+          // Navigate to the login screen
+          // Note: The router's redirect logic will automatically skip this
+          // to the dashboard if a session is already active.
           context.go(RouteNames.login);
         }
       }
     } catch (e) {
       debugPrint("Splash Video Error: $e");
-      // Fallback navigation in case of error (prevents getting stuck on loading)
+      // Fallback navigation in case of initialization error
       await Future.delayed(const Duration(milliseconds: 3500));
       if (mounted) context.go(RouteNames.login);
     }
@@ -58,12 +60,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Recommended for video splash
+      backgroundColor: Colors.black, // Sleek black background for video splash
       body: Center(
         child: _isInitialized
             ? SizedBox.expand(
           child: FittedBox(
-            fit: BoxFit.cover, // Cover the whole screen
+            fit: BoxFit.cover,
             child: SizedBox(
               width: _controller.value.size.width,
               height: _controller.value.size.height,

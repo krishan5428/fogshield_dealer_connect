@@ -1,30 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
-import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
+import 'package:fogshield_dealer_connect/core/database/app_database.dart';
 
-class ProductsSummaryTable extends ConsumerWidget {
-  const ProductsSummaryTable({super.key});
+class ProductsSummaryTable extends StatelessWidget {
+  final List<QuotationItem> items;
+  final double totalAmount;
+
+  const ProductsSummaryTable({
+    super.key,
+    required this.items,
+    required this.totalAmount
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the actual cart state
-    final cartState = ref.watch(cartProvider);
-    final items = cartState.items;
-
-    if (items.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text(
-          'No items selected',
-          style: TextStyle(color: AppColors.disabledGrey, fontStyle: FontStyle.italic),
-        ),
-      );
-    }
-
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        // Table Header
         Container(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
           decoration: const BoxDecoration(
@@ -33,14 +24,13 @@ class ProductsSummaryTable extends ConsumerWidget {
           ),
           child: const Row(
             children: [
-              Expanded(flex: 3, child: Text('Item', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.black))),
+              Expanded(flex: 3, child: Text('Item Model', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.black))),
               Expanded(child: Text('Qty', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.black), textAlign: TextAlign.center)),
               Expanded(flex: 2, child: Text('Total', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.black), textAlign: TextAlign.right)),
             ],
           ),
         ),
 
-        // List of actual items from Cart
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -48,6 +38,8 @@ class ProductsSummaryTable extends ConsumerWidget {
           separatorBuilder: (context, index) => const Divider(height: 1),
           itemBuilder: (context, index) {
             final item = items[index];
+            final rowTotal = item.quantity * item.priceAtTimeOfSale;
+
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
               child: Row(
@@ -55,7 +47,7 @@ class ProductsSummaryTable extends ConsumerWidget {
                   Expanded(
                     flex: 3,
                     child: Text(
-                      item.name,
+                      item.productModel,
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.black),
                     ),
                   ),
@@ -69,7 +61,7 @@ class ProductsSummaryTable extends ConsumerWidget {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      '₹${item.total.toStringAsFixed(0)}',
+                      '₹${rowTotal.toStringAsFixed(0)}',
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
                       textAlign: TextAlign.right,
                     ),
@@ -80,7 +72,6 @@ class ProductsSummaryTable extends ConsumerWidget {
           },
         ),
 
-        // Dynamic Subtotal Footer inside the table
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -90,9 +81,9 @@ class ProductsSummaryTable extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Items Subtotal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
               Text(
-                '₹${cartState.total.toStringAsFixed(0)}',
+                '₹${totalAmount.toStringAsFixed(0)}',
                 style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.colorCompanyPrimary, fontSize: 14),
               ),
             ],
