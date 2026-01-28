@@ -1,36 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/expandable_section.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/customer_details_section.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/products_summary_table.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/terms_conditions_section.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/quotation_meta_info.dart';
-import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
-import 'package:fogshield_dealer_connect/features/quotation/presentation/providers/quotation_form_providers.dart';
-import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
+import 'package:fogshield_dealer_connect/core/database/app_database.dart';
 
-class QuotationSummary extends ConsumerWidget {
-  const QuotationSummary({super.key});
+class QuotationSummary extends StatelessWidget {
+  final Quotation quotation;
+  final List<QuotationItem> items;
+
+  const QuotationSummary({
+    super.key,
+    required this.quotation,
+    required this.items,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Watch cart state to get the real-time total
-    final cartState = ref.watch(cartProvider);
-
+  Widget build(BuildContext context) {
     return Column(
       children: [
-        const QuotationMetaInfo(),
+        // Meta info receives the real ID and Date
+        QuotationMetaInfo(
+          quotationId: quotation.id,
+          date: quotation.createdAt,
+        ),
         const SizedBox(height: 16),
 
-        const ExpandableSection(
+        ExpandableSection(
           title: 'Customer Details',
           icon: Icons.person_pin_outlined,
-          child: CustomerDetailsSection(),
+          child: CustomerDetailsSection(quotation: quotation),
         ),
-        const ExpandableSection(
+        ExpandableSection(
           title: 'Products & Pricing',
           icon: Icons.inventory_2_outlined,
-          child: ProductsSummaryTable(),
+          child: ProductsSummaryTable(
+            items: items,
+            totalAmount: quotation.totalAmount,
+          ),
         ),
         const ExpandableSection(
           title: 'Terms & Conditions',

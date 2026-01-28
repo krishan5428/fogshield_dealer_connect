@@ -4,21 +4,6 @@ import 'package:drift/drift.dart';
 enum SyncStatus { localOnly, syncing, synced, failed }
 enum QuotationStatus { draft, sent, accepted, rejected }
 
-/// Dealer Profile: Persisted locally for offline quotation metadata attachment
-class DealerProfile extends Table {
-  TextColumn get phone => text()(); // Primary Key
-  TextColumn get name => text()();
-  TextColumn get email => text()();
-  TextColumn get companyName => text()();
-  TextColumn get address => text()();
-  TextColumn get gstNumber => text()();
-  TextColumn get dealerId => text()(); // The SECDLRXXX code
-  TextColumn get profileImage => text().nullable()();
-
-  @override
-  Set<Column> get primaryKey => {phone};
-}
-
 /// Products Table: Master price list loaded locally
 class Products extends Table {
   TextColumn get model => text()(); // Primary SKU
@@ -36,22 +21,38 @@ class Products extends Table {
 /// Quotations Table: Single source of truth for History Page
 class Quotations extends Table {
   TextColumn get id => text()(); // Local UUID/Unique ID
-  TextColumn get remoteId => text().nullable()(); // Server-assigned ID (Future-proof)
+  TextColumn get remoteId => text().nullable()();
 
   // Customer Data
   TextColumn get customerName => text()();
   TextColumn get phoneNumber => text()();
   TextColumn get email => text().nullable()();
   TextColumn get gstNumber => text().nullable()();
+  TextColumn get companyName => text().withDefault(const Constant(''))();
 
-  // Financial Summary (Cached for performance)
+  // Address Fields
+  TextColumn get billingAddress => text().withDefault(const Constant(''))();
+  TextColumn get billingCity => text().withDefault(const Constant(''))();
+  TextColumn get billingState => text().withDefault(const Constant(''))();
+  TextColumn get billingPincode => text().withDefault(const Constant(''))();
+
+  BoolColumn get sameAsBilling => boolean().withDefault(const Constant(true))();
+
+  TextColumn get shippingAddress => text().withDefault(const Constant(''))();
+  TextColumn get shippingCity => text().withDefault(const Constant(''))();
+  TextColumn get shippingState => text().withDefault(const Constant(''))();
+  TextColumn get shippingPincode => text().withDefault(const Constant(''))();
+
+  // Financial Summary
   RealColumn get totalAmount => real()();
   RealColumn get discountPercentage => real().withDefault(const Constant(0.0))();
 
   // Logic & State
-  IntColumn get status => intEnum<QuotationStatus>()();
+  IntColumn get status => intEnum<QuotationStatus>().withDefault(const Constant(0))();
   IntColumn get syncStatus => intEnum<SyncStatus>().withDefault(const Constant(0))();
-  DateTimeColumn get createdAt => dateTime()();
+
+  // Added default value to prevent null-check errors on existing rows
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -60,11 +61,21 @@ class Quotations extends Table {
 /// QuotationItems: Links products to quotes with price snapshots
 class QuotationItems extends Table {
   IntColumn get localId => integer().autoIncrement()();
-
-  // Fixed: Added NOT NULL to custom constraint to resolve Drift warning
   TextColumn get quotationId => text().customConstraint('NOT NULL REFERENCES quotations(id) ON DELETE CASCADE')();
-
   TextColumn get productModel => text().references(Products, #model)();
   IntColumn get quantity => integer()();
   RealColumn get priceAtTimeOfSale => real()();
+}
+
+class DealerProfile extends Table {
+  TextColumn get phone => text()();
+  TextColumn get name => text()();
+  TextColumn get email => text()();
+  TextColumn get companyName => text()();
+  TextColumn get address => text()();
+  TextColumn get gstNumber => text()();
+  TextColumn get dealerId => text()();
+  TextColumn get profileImage => text().nullable()();
+  @override
+  Set<Column> get primaryKey => {phone};
 }

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/stepper_indicator.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/quotation_summary.dart';
@@ -10,6 +11,9 @@ import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/loading_indicator.dart';
 import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/providers/quotation_form_providers.dart';
+import 'package:fogshield_dealer_connect/core/database/app_database.dart';
+import 'package:fogshield_dealer_connect/core/providers/app_database_provider.dart';
+import 'package:fogshield_dealer_connect/core/database/app_database_tables.dart' as tables;
 
 class QuotationReviewPage extends ConsumerStatefulWidget {
   const QuotationReviewPage({super.key});
@@ -21,31 +25,112 @@ class QuotationReviewPage extends ConsumerStatefulWidget {
 class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
   bool _isSubmitting = false;
 
+  /// Constructs a temporary record for the QuotationSummary widget preview
+  ({Quotation quote, List<QuotationItem> items}) _getPreviewData() {
+    final formState = ref.read(quotationFormProvider);
+    final cartState = ref.read(cartProvider);
+
+    final tempQuotation = Quotation(
+      id: 'DRAFT-PREVIEW',
+      customerName: formState.customerName,
+      phoneNumber: formState.phoneNumber,
+      email: formState.email,
+      gstNumber: formState.gstNumber,
+      companyName: formState.companyName,
+      billingAddress: formState.billingAddress,
+      billingCity: formState.billingCity,
+      billingState: formState.billingState,
+      billingPincode: formState.billingPincode,
+      sameAsBilling: formState.sameAsBilling,
+      shippingAddress: formState.shippingAddress,
+      shippingCity: formState.shippingCity,
+      shippingState: formState.shippingState,
+      shippingPincode: formState.shippingPincode,
+      totalAmount: cartState.total,
+      discountPercentage: 0.0, // Replace with cartState.discount if exists
+      status: tables.QuotationStatus.draft,
+      syncStatus: tables.SyncStatus.localOnly,
+      createdAt: DateTime.now(),
+    );
+
+    final tempItems = cartState.items.map((item) {
+      return QuotationItem(
+        localId: 0,
+        quotationId: 'DRAFT-PREVIEW',
+        productModel: item.id,
+        quantity: item.quantity,
+        priceAtTimeOfSale: item.price,
+      );
+    }).toList();
+
+    return (quote: tempQuotation, items: tempItems);
+  }
+
   void _handleSubmit() async {
     setState(() => _isSubmitting = true);
 
-    // Simulate API submission process
-    await Future.delayed(const Duration(milliseconds: 2500));
+    final formState = ref.read(quotationFormProvider);
+    final cartState = ref.read(cartProvider);
+    final db = ref.read(databaseProvider);
 
-    if (!mounted) return;
-    setState(() => _isSubmitting = false);
+    final quotationId = 'QT-${DateTime.now().year}-${const Uuid().v4().substring(0, 4).toUpperCase()}';
 
-    // Clear cart and form after successful submission if needed
-    // ref.read(cartProvider.notifier).clearCart();
-    // ref.read(quotationFormProvider.notifier).resetForm();
+    try {
+      final quotationRecord = Quotation(
+        id: quotationId,
+        customerName: formState.customerName,
+        phoneNumber: formState.phoneNumber,
+        email: formState.email,
+        gstNumber: formState.gstNumber,
+        companyName: formState.companyName,
+        billingAddress: formState.billingAddress,
+        billingCity: formState.billingCity,
+        billingState: formState.billingState,
+        billingPincode: formState.billingPincode,
+        sameAsBilling: formState.sameAsBilling,
+        shippingAddress: formState.shippingAddress,
+        shippingCity: formState.shippingCity,
+        shippingState: formState.shippingState,
+        shippingPincode: formState.shippingPincode,
+        totalAmount: cartState.total,
+        discountPercentage: 0.0,
+        status: tables.QuotationStatus.sent,
+        syncStatus: tables.SyncStatus.localOnly,
+        createdAt: DateTime.now(),
+      );
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const QuotationSuccessDialog(),
-    );
+      final itemsToSave = cartState.items.map((item) {
+        return QuotationItemsCompanion.insert(
+          quotationId: quotationId,
+          productModel: item.id,
+          quantity: item.quantity,
+          priceAtTimeOfSale: item.price,
+        );
+      }).toList();
+
+      await db.saveFullQuotation(quotationRecord, itemsToSave);
+
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const QuotationSuccessDialog(),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving quotation: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Watch providers to ensure UI updates if state changes elsewhere
     final cartState = ref.watch(cartProvider);
-    final formState = ref.watch(quotationFormProvider);
+    final previewData = _getPreviewData();
 
     return Stack(
       children: [
@@ -61,8 +146,10 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     children: [
-                      // The summary now reflects real-time form and cart data
-                      const QuotationSummary(),
+                      QuotationSummary(
+                        quotation: previewData.quote,
+                        items: previewData.items,
+                      ),
                       const SizedBox(height: 32),
                       const Icon(Icons.verified_user_outlined, color: AppColors.disabledGrey, size: 24),
                       const SizedBox(height: 12),
@@ -91,11 +178,7 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  offset: const Offset(0, -4),
-                  blurRadius: 12,
-                ),
+                BoxShadow(color: Colors.black.withOpacity(0.05), offset: const Offset(0, -4), blurRadius: 12),
               ],
             ),
             child: Row(
@@ -104,16 +187,13 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
                   child: CustomButton(
                     text: 'SAVE DRAFT',
                     isOutlined: true,
-                    onPressed: _isSubmitting ? null : () {
-                      // Draft logic using formState and cartState
-                    },
+                    onPressed: _isSubmitting ? null : () {},
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: CustomButton(
                     text: 'SUBMIT QUOTE',
-                    // Disable if cart is empty
                     onPressed: (_isSubmitting || cartState.items.isEmpty) ? null : _handleSubmit,
                   ),
                 ),
@@ -121,7 +201,6 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
             ),
           ),
         ),
-
         if (_isSubmitting)
           Positioned.fill(
             child: BackdropFilter(
@@ -131,32 +210,17 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
                 child: Center(
                   child: Card(
                     elevation: 12,
-                    shadowColor: Colors.black45,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 40),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const LoadingIndicator(size: 48, strokeWidth: 4),
-                          const SizedBox(height: 32),
-                          Text(
-                            'Finalizing Quotation...',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.colorCompanyPrimary,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Generating your document securely',
-                            style: TextStyle(
-                              color: AppColors.disabledGrey,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          LoadingIndicator(size: 48, strokeWidth: 4),
+                          SizedBox(height: 32),
+                          Text('Finalizing Quotation...', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18)),
+                          SizedBox(height: 12),
+                          Text('Generating your document securely', style: TextStyle(color: AppColors.disabledGrey, fontSize: 13)),
                         ],
                       ),
                     ),

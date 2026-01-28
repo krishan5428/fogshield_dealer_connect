@@ -38,15 +38,12 @@ import 'package:fogshield_dealer_connect/features/products/presentation/pages/vi
 import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
 
-/// The routerProvider handles the application's navigation logic.
-/// It observes both the authProvider and profileProvider to handle session-based redirection seamlessly.
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
   final profileState = ref.watch(profileProvider);
 
   return GoRouter(
     initialLocation: '/',
-    // Added AuthRefreshListenable to notify GoRouter of any auth OR profile changes
     refreshListenable: AuthRefreshListenable(ref),
     debugLogDiagnostics: true,
 
@@ -56,25 +53,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggingIn = state.matchedLocation == RouteNames.login;
       final isSigningUp = state.matchedLocation == RouteNames.signup;
 
-      // 1. While on Splash Screen, DO NOT redirect.
-      // Let the SplashScreen widget handle its 3500ms timer.
       if (isAtSplash) return null;
 
-      // 2. While checking storage or if we are authenticated but profile data is still fetching
-      // we stay on the current route (likely splash) to prevent "Loading..." flickers.
       if (status == AuthStatus.initial || status == AuthStatus.loading) {
         return null;
       }
 
-      // 3. Authentication Redirection
       if (status == AuthStatus.unauthenticated) {
         if (isLoggingIn || isSigningUp) return null;
         return RouteNames.login;
       }
 
       if (status == AuthStatus.authenticated) {
-        // ✅ Extra Guard: Even if authenticated, if the profile name is still "Loading...",
-        // stay on the splash screen/current route until the real name is available in memory.
         if (profileState.name == 'Loading...') {
           return null;
         }
@@ -204,20 +194,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.quotationDetail,
         name: 'quotation-detail',
-        pageBuilder: (context, state) => PageTransitions.slideTransition(
-          context: context,
-          state: state,
-          child: const QuotationDetailPage(),
-        ),
+        pageBuilder: (context, state) {
+          final quotationId = state.extra as String? ?? '';
+          return PageTransitions.slideTransition(
+            context: context,
+            state: state,
+            child: QuotationDetailPage(quotationId: quotationId),
+          );
+        },
       ),
+      // ✅ Fixed PDF Viewer Route to accept and pass quotationId
       GoRoute(
         path: RouteNames.quotationPdfViewer,
         name: 'quotation-pdf-viewer',
-        pageBuilder: (context, state) => PageTransitions.slideTransition(
-          context: context,
-          state: state,
-          child: const QuotationPdfViewerPage(),
-        ),
+        pageBuilder: (context, state) {
+          final quotationId = state.extra as String? ?? '';
+          return PageTransitions.slideTransition(
+            context: context,
+            state: state,
+            child: QuotationPdfViewerPage(quotationId: quotationId),
+          );
+        },
       ),
       GoRoute(
         path: RouteNames.productCatalog,
@@ -343,9 +340,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 class AuthRefreshListenable extends ChangeNotifier {
   AuthRefreshListenable(Ref ref) {
-    // Listen to Auth changes
     ref.listen(authProvider, (_, __) => notifyListeners());
-    // ✅ Listen to Profile changes to ensure the name is ready before dashboard redirect
     ref.listen(profileProvider, (_, __) => notifyListeners());
   }
 }

@@ -1,89 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
-import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/edit_section_button.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
-// FIX: Removed the double slash '//' in the import path below
-import 'package:fogshield_dealer_connect/features/quotation/presentation/providers/quotation_form_providers.dart';
+import 'package:fogshield_dealer_connect/core/database/app_database.dart';
 
-class CustomerDetailsSection extends ConsumerWidget {
-  const CustomerDetailsSection({super.key});
+class CustomerDetailsSection extends StatelessWidget {
+  final Quotation quotation;
+
+  const CustomerDetailsSection({super.key, required this.quotation});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Watching the global quotation form state
-    final formState = ref.watch(quotationFormProvider);
+  Widget build(BuildContext context) {
+    // Construct Billing Address String
+    final billingAddr = [
+      if (quotation.billingAddress.isNotEmpty) quotation.billingAddress,
+      if (quotation.billingCity.isNotEmpty) quotation.billingCity,
+      if (quotation.billingState.isNotEmpty) quotation.billingState,
+    ].join(', ') + (quotation.billingPincode.isNotEmpty ? ' - ${quotation.billingPincode}' : '');
 
-    // Helper to handle empty fields with a professional placeholder
-    String displayValue(String? value) =>
-        (value == null || value.trim().isEmpty) ? 'Not Provided' : value;
-
-    // Safely construct the address string with improved formatting
-    String fullAddress = '';
-    final addressParts = [
-      if (formState.billingAddress.isNotEmpty) formState.billingAddress,
-      if (formState.billingCity.isNotEmpty) formState.billingCity,
-      if (formState.billingState.isNotEmpty) formState.billingState,
-    ];
-
-    if (addressParts.isNotEmpty) {
-      fullAddress = addressParts.join(', ');
-      if (formState.billingPincode.isNotEmpty) {
-        fullAddress += ' - ${formState.billingPincode}';
-      }
-    } else {
-      fullAddress = 'Address not provided';
-    }
+    // Construct Shipping Address String
+    final shippingAddr = quotation.sameAsBilling
+        ? 'Same as Billing'
+        : [
+      if (quotation.shippingAddress.isNotEmpty) quotation.shippingAddress,
+      if (quotation.shippingCity.isNotEmpty) quotation.shippingCity,
+      if (quotation.shippingState.isNotEmpty) quotation.shippingState,
+    ].join(', ') + (quotation.shippingPincode.isNotEmpty ? ' - ${quotation.shippingPincode}' : '');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Customer Information',
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 13,
-                color: AppColors.black,
-              ),
-            ),
-            EditSectionButton(onTap: () => context.push(RouteNames.quotationForm)),
-          ],
-        ),
         const SizedBox(height: 12),
-
-        // Data rows now correctly pull from the unified provider instance
         _buildInfoRow(
           Icons.person_outline,
-          displayValue(formState.customerName),
+          quotation.customerName,
           'Customer Name',
         ),
         _buildInfoRow(
           Icons.phone_android_rounded,
-          displayValue(formState.phoneNumber),
+          quotation.phoneNumber,
           'Phone Number',
         ),
-        _buildInfoRow(
-          Icons.email_outlined,
-          displayValue(formState.email),
-          'Email Address',
-        ),
+        if (quotation.email != null && quotation.email!.isNotEmpty)
+          _buildInfoRow(
+            Icons.email_outlined,
+            quotation.email!,
+            'Email Address',
+          ),
+        if (quotation.companyName.isNotEmpty)
+          _buildInfoRow(
+            Icons.business_rounded,
+            quotation.companyName,
+            'Company Name',
+          ),
+        if (quotation.gstNumber != null && quotation.gstNumber!.isNotEmpty)
+          _buildInfoRow(
+            Icons.receipt_long_outlined,
+            quotation.gstNumber!,
+            'GST Number',
+          ),
+
+        const Divider(height: 24, thickness: 0.5),
+
+        // Billing Address Row
         _buildInfoRow(
           Icons.location_on_outlined,
-          fullAddress,
+          billingAddr.isEmpty ? 'Not Provided' : billingAddr,
           'Billing Address',
         ),
 
-        // Only show company name if it was actually entered
-        if (formState.companyName.isNotEmpty)
-          _buildInfoRow(
-            Icons.business_rounded,
-            formState.companyName,
-            'Company Name',
-          ),
+        // Shipping Address Row
+        _buildInfoRow(
+          Icons.local_shipping_outlined,
+          shippingAddr,
+          'Shipping Address',
+        ),
       ],
     );
   }
@@ -113,7 +102,7 @@ class CustomerDetailsSection extends ConsumerWidget {
                 Text(
                   value,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppColors.black,
                   ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
-
-enum QuotationStatus { draft, sent, accepted, rejected }
+// Import the database tables to use the unified enum
+import 'package:fogshield_dealer_connect/core/database/app_database_tables.dart' as tables;
 
 class QuotationStatusBadge extends StatelessWidget {
-  final QuotationStatus status;
+  // Use the unified enum from the database
+  final tables.QuotationStatus status;
 
   const QuotationStatusBadge({super.key, required this.status});
 
@@ -14,19 +15,19 @@ class QuotationStatusBadge extends StatelessWidget {
     String label;
 
     switch (status) {
-      case QuotationStatus.draft:
+      case tables.QuotationStatus.draft:
         color = AppColors.greyDark;
         label = 'DRAFT';
         break;
-      case QuotationStatus.sent:
+      case tables.QuotationStatus.sent:
         color = Colors.blue;
         label = 'SENT';
         break;
-      case QuotationStatus.accepted:
+      case tables.QuotationStatus.accepted:
         color = AppColors.green;
         label = 'ACCEPTED';
         break;
-      case QuotationStatus.rejected:
+      case tables.QuotationStatus.rejected:
         color = AppColors.mutedRed;
         label = 'REJECTED';
         break;
