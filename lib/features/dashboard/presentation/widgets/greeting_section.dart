@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
+import 'package:fogshield_dealer_connect/features/profile/presentation/providers/profile_providers.dart';
 
-class GreetingSection extends StatelessWidget {
+class GreetingSection extends ConsumerWidget {
   const GreetingSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+// Watch the profile provider to get the actual user name
+    final profile = ref.watch(profileProvider);
+
     final hour = DateTime.now().hour;
     String greeting;
     IconData greetingIcon;
@@ -68,9 +73,10 @@ class GreetingSection extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'ABC Company',
-                  style: TextStyle(
+                // Display the dynamic name from the profile state
+                Text(
+                  profile.name,
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: AppColors.white,
@@ -92,5 +98,7 @@ class GreetingSection extends StatelessWidget {
         ],
       ),
     );
+
+
   }
 }

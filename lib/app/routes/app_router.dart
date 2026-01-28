@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/core/widgets/splash_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 import 'package:fogshield_dealer_connect/core/animations/page_transitions.dart';
+import 'package:fogshield_dealer_connect/features/auth/presentation/providers/auth_providers.dart';
+import 'package:fogshield_dealer_connect/features/auth/presentation/state/auth_state.dart';
+import 'package:fogshield_dealer_connect/features/profile/presentation/providers/profile_providers.dart';
+
+// Pages
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/login_page.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/signup_page.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/pages/dashboard_page.dart';
@@ -26,16 +33,60 @@ import 'package:fogshield_dealer_connect/features/offers/presentation/pages/offe
 import 'package:fogshield_dealer_connect/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/product_catalog_page.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/video_player_page.dart';
+
+// Models
 import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
-import 'package:fogshield_dealer_connect/core/widgets/splash_screen.dart';
 
-class AppRouter {
-  AppRouter._();
+/// The routerProvider handles the application's navigation logic.
+/// It observes both the authProvider and profileProvider to handle session-based redirection seamlessly.
+final routerProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authProvider);
+  final profileState = ref.watch(profileProvider);
 
-  static final GoRouter router = GoRouter(
+  return GoRouter(
     initialLocation: '/',
+    // Added AuthRefreshListenable to notify GoRouter of any auth OR profile changes
+    refreshListenable: AuthRefreshListenable(ref),
     debugLogDiagnostics: true,
+
+    redirect: (context, state) {
+      final status = authState.status;
+      final isAtSplash = state.matchedLocation == '/';
+      final isLoggingIn = state.matchedLocation == RouteNames.login;
+      final isSigningUp = state.matchedLocation == RouteNames.signup;
+
+      // 1. While on Splash Screen, DO NOT redirect.
+      // Let the SplashScreen widget handle its 3500ms timer.
+      if (isAtSplash) return null;
+
+      // 2. While checking storage or if we are authenticated but profile data is still fetching
+      // we stay on the current route (likely splash) to prevent "Loading..." flickers.
+      if (status == AuthStatus.initial || status == AuthStatus.loading) {
+        return null;
+      }
+
+      // 3. Authentication Redirection
+      if (status == AuthStatus.unauthenticated) {
+        if (isLoggingIn || isSigningUp) return null;
+        return RouteNames.login;
+      }
+
+      if (status == AuthStatus.authenticated) {
+        // ✅ Extra Guard: Even if authenticated, if the profile name is still "Loading...",
+        // stay on the splash screen/current route until the real name is available in memory.
+        if (profileState.name == 'Loading...') {
+          return null;
+        }
+
+        if (isLoggingIn || isSigningUp) {
+          return RouteNames.dashboard;
+        }
+      }
+
+      return null;
+    },
+
     routes: [
       GoRoute(
         path: '/',
@@ -177,7 +228,6 @@ class AppRouter {
           child: const ProductCatalogPage(),
         ),
       ),
-      // Fixed: Passing the product object from state.extra to ProductDetailPage
       GoRoute(
         path: RouteNames.productDetail,
         name: 'product-detail',
@@ -185,7 +235,6 @@ class AppRouter {
           Product product;
           bool showQuotationActions = false;
 
-          // Handle if extra is passed as a Map or just a Product
           if (state.extra is Map<String, dynamic>) {
             final map = state.extra as Map<String, dynamic>;
             product = map['product'] as Product;
@@ -204,7 +253,6 @@ class AppRouter {
           );
         },
       ),
-
       GoRoute(
         path: RouteNames.datasheets,
         name: 'datasheets',
@@ -287,5 +335,17 @@ class AppRouter {
         ),
       ),
     ],
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(child: Text('Navigation Error: ${state.error}')),
+    ),
   );
+});
+
+class AuthRefreshListenable extends ChangeNotifier {
+  AuthRefreshListenable(Ref ref) {
+    // Listen to Auth changes
+    ref.listen(authProvider, (_, __) => notifyListeners());
+    // ✅ Listen to Profile changes to ensure the name is ready before dashboard redirect
+    ref.listen(profileProvider, (_, __) => notifyListeners());
+  }
 }
