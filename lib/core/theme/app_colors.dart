@@ -12,21 +12,30 @@ class AppColors {
   static const Color colorPrimaryDark = Color(0xFF000000);
 
   // --- NEW: Professional Modern Palette ---
-  static const Color navyDeep = Color(0xFF1B263B);      // Professional deep navy
-  static const Color slateBlue = Color(0xFF334155);     // Sophisticated text/icon grey-blue
-  static const Color indigoAccent = Color(0xFF4F46E5);  // Modern call-to-action indigo
-  static const Color emeraldSuccess = Color(0xFF10B981);// Clean, modern success green
-  static const Color amberWarning = Color(0xFFF59E0B);  // Professional warning gold
-  static const Color roseError = Color(0xFFE11D48);     // Modern error red
-  static const Color zincDark = Color(0xFF09090B);      // Ultra-dark neutral for cards
-  static const Color zincLight = Color(0xFFF4F4F5);     // Modern off-white background
-  static const Color coolSilver = Color(0xFF94A3B8);    // Muted secondary text
-  static const Color royalBlue = Color(0xFF2563EB);     // High-contrast primary blue
-  static const Color forestGreen = Color(0xFF064E3B);   // Deep professional green
-  static const Color violetSoft = Color(0xFF7C3AED);    // Modern purple accent
-  static const Color oceanBlue = Color(0xFF0EA5E9);     // Bright sky blue for links
-  static const Color terracotta = Color(0xFFC2410C);    // Professional muted orange/earth
-  static const Color graphite = Color(0xFF27272A);      // Soft black for dark mode cards
+  static const Color navyDeep = Color(0xFF1B263B); // Professional deep navy
+  static const Color slateBlue =
+      Color(0xFF334155); // Sophisticated text/icon grey-blue
+  static const Color indigoAccent =
+      Color(0xFF4F46E5); // Modern call-to-action indigo
+  static const Color emeraldSuccess =
+      Color(0xFF10B981); // Clean, modern success green
+  static const Color amberWarning =
+      Color(0xFFF59E0B); // Professional warning gold
+  static const Color roseError = Color(0xFFE11D48); // Modern error red
+  static const Color zincDark =
+      Color(0xFF09090B); // Ultra-dark neutral for cards
+  static const Color zincLight =
+      Color(0xFFF4F4F5); // Modern off-white background
+  static const Color coolSilver = Color(0xFF94A3B8); // Muted secondary text
+  static const Color royalBlue =
+      Color(0xFF2563EB); // High-contrast primary blue
+  static const Color forestGreen = Color(0xFF064E3B); // Deep professional green
+  static const Color violetSoft = Color(0xFF7C3AED); // Modern purple accent
+  static const Color oceanBlue = Color(0xFF0EA5E9); // Bright sky blue for links
+  static const Color terracotta =
+      Color(0xFFC2410C); // Professional muted orange/earth
+  static const Color graphite =
+      Color(0xFF27272A); // Soft black for dark mode cards
 
   // Background Colors
   static const Color redBg = Color(0x19A42E2F);

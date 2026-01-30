@@ -29,17 +29,17 @@ class FormActions extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Expanded(
+          //   child: CustomButton(
+          //     text: 'BACK',
+          //     isOutlined: true,
+          //     onPressed: onSaveDraft,
+          //   ),
+          // ),
+          // const SizedBox(width: 16),
           Expanded(
             child: CustomButton(
-              text: 'SAVE DRAFT',
-              isOutlined: true,
-              onPressed: onSaveDraft,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: CustomButton(
-              text: 'NEXT',
+              text: 'CONTINUE TO SELECT PRODUCTS',
               isLoading: isNextLoading,
               onPressed: onNext,
             ),

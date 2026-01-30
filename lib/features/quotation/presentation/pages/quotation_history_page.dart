@@ -84,11 +84,11 @@ class QuotationHistoryPage extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: AppColors.colorCompanyPrimary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {},
+      //   backgroundColor: AppColors.colorCompanyPrimary,
+      //   child: const Icon(Icons.add, color: Colors.white),
+      // ),
     );
   }
 

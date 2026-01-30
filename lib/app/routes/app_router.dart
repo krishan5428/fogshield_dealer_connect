@@ -203,7 +203,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-      // ✅ Fixed PDF Viewer Route to accept and pass quotationId
+      // THE FIX: Correctly extracts extra string for the PDF viewer
       GoRoute(
         path: RouteNames.quotationPdfViewer,
         name: 'quotation-pdf-viewer',

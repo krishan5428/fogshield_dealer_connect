@@ -7,6 +7,7 @@ import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets
 import 'package:go_router/go_router.dart';
 import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/providers/quotation_form_providers.dart';
+import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
 
 class QuotationFormPage extends ConsumerStatefulWidget {
   const QuotationFormPage({super.key});
@@ -38,32 +39,42 @@ class _QuotationFormPageState extends ConsumerState<QuotationFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CustomAppBar(title: 'Customer Details'),
-      body: Column(
-        children: [
-          const StepperIndicator(currentStep: 1),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  const SizedBox(height: 8),
-                  // Form fields now handle their own state updates in real-time
-                  QuotationFormFields(
-                    formKey: _formKey,
-                  ),
-                  const SizedBox(height: 24),
-                ],
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        // REQUIREMENT: When back press happens, don't save as draft, delete/reset instead.
+        // This ensures that if a user abandons the form, no partial data remains
+        // in the session providers (Quotation Form and Cart).
+        ref.read(quotationFormProvider.notifier).resetForm();
+        ref.read(cartProvider.notifier).clearCart();
+      },
+      child: Scaffold(
+        appBar: const CustomAppBar(title: 'Customer Details'),
+        body: Column(
+          children: [
+            const StepperIndicator(currentStep: 1),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    // Form fields now handle their own state updates in real-time
+                    QuotationFormFields(
+                      formKey: _formKey,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: FormActions(
-        onNext: _onNext,
-        onSaveDraft: _onSaveDraft,
+          ],
+        ),
+        bottomNavigationBar: FormActions(
+          onNext: _onNext,
+          onSaveDraft: _onSaveDraft,
+        ),
       ),
     );
   }

@@ -47,7 +47,7 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
       shippingState: formState.shippingState,
       shippingPincode: formState.shippingPincode,
       totalAmount: cartState.total,
-      discountPercentage: 0.0, // Replace with cartState.discount if exists
+      discountPercentage: 0.0,
       status: tables.QuotationStatus.draft,
       syncStatus: tables.SyncStatus.localOnly,
       createdAt: DateTime.now(),
@@ -67,6 +67,8 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
   }
 
   void _handleSubmit() async {
+    if (_isSubmitting) return; // Guard against multiple clicks
+
     setState(() => _isSubmitting = true);
 
     final formState = ref.read(quotationFormProvider);
@@ -108,15 +110,24 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
         );
       }).toList();
 
+      // 1. Save to Database
       await db.saveFullQuotation(quotationRecord, itemsToSave);
+
+      // 2. REQUIREMENT: 1 second delay for visual confirmation
+      await Future.delayed(const Duration(seconds: 1));
+
+      // 3. REQUIREMENT: Reset all form/cart data immediately to prevent duplication/cloning
+      ref.read(cartProvider.notifier).clearCart();
+      ref.read(quotationFormProvider.notifier).resetForm();
 
       if (!mounted) return;
       setState(() => _isSubmitting = false);
 
+      // 4. Show Success Dialog with the actual generated ID
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const QuotationSuccessDialog(),
+        builder: (context) => QuotationSuccessDialog(quotationId: quotationId),
       );
     } catch (e) {
       if (!mounted) return;

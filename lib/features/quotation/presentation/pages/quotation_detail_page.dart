@@ -84,45 +84,6 @@ class QuotationDetailPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // COMMENTED OUT PER REQUIREMENT: Real Status Header
-          /*
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.grey.withOpacity(0.2)),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'CURRENT STATUS',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.disabledGrey,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    // Map database status back to UI badge
-                    QuotationStatusBadge(status: quote.status),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                // Timeline now reflects the actual creation date from DB
-                StatusTimeline(
-                  createdAt: quote.createdAt,
-                  status: quote.status,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          */
-
           const Text(
             'DOCUMENT OVERVIEW',
             style: TextStyle(
@@ -158,14 +119,13 @@ class QuotationDetailPage extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          // Removed EDIT QUOTE button per requirement
           Expanded(
             child: CustomButton(
               text: 'VIEW PDF',
               icon: Icons.picture_as_pdf_rounded,
               onPressed: () {
-                // Navigate to PDF viewer page
-                context.push(RouteNames.quotationPdfViewer);
+                // Navigate to PDF viewer page with the current quotationId passed as extra
+                context.push(RouteNames.quotationPdfViewer, extra: quotationId);
               },
             ),
           ),
