@@ -28,7 +28,7 @@ class EmptyState extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.lightGrey,
                 shape: BoxShape.circle,
               ),

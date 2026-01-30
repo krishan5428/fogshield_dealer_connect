@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
 class ProductSearchBar extends StatelessWidget {
-  const ProductSearchBar({super.key});
+  final ValueChanged<String>? onChanged;
+
+  const ProductSearchBar({
+    super.key,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +22,9 @@ class ProductSearchBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.grey),
             ),
-            child: const TextField(
-              decoration: InputDecoration(
+            child: TextField(
+              onChanged: onChanged,
+              decoration: const InputDecoration(
                 hintText: 'Search products...',
                 prefixIcon: Icon(Icons.search_rounded, color: AppColors.colorAccent),
                 border: InputBorder.none,

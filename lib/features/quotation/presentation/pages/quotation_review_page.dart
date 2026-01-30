@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -15,6 +16,7 @@ import 'package:fogshield_dealer_connect/core/database/app_database.dart';
 import 'package:fogshield_dealer_connect/core/providers/app_database_provider.dart';
 import 'package:fogshield_dealer_connect/core/database/app_database_tables.dart' as tables;
 
+@RoutePage()
 class QuotationReviewPage extends ConsumerStatefulWidget {
   const QuotationReviewPage({super.key});
 
@@ -25,7 +27,6 @@ class QuotationReviewPage extends ConsumerStatefulWidget {
 class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
   bool _isSubmitting = false;
 
-  /// Constructs a temporary record for the QuotationSummary widget preview
   ({Quotation quote, List<QuotationItem> items}) _getPreviewData() {
     final formState = ref.read(quotationFormProvider);
     final cartState = ref.read(cartProvider);
@@ -67,8 +68,7 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
   }
 
   void _handleSubmit() async {
-    if (_isSubmitting) return; // Guard against multiple clicks
-
+    if (_isSubmitting) return;
     setState(() => _isSubmitting = true);
 
     final formState = ref.read(quotationFormProvider);
@@ -110,20 +110,15 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
         );
       }).toList();
 
-      // 1. Save to Database
       await db.saveFullQuotation(quotationRecord, itemsToSave);
-
-      // 2. REQUIREMENT: 1 second delay for visual confirmation
       await Future.delayed(const Duration(seconds: 1));
 
-      // 3. REQUIREMENT: Reset all form/cart data immediately to prevent duplication/cloning
       ref.read(cartProvider.notifier).clearCart();
       ref.read(quotationFormProvider.notifier).resetForm();
 
       if (!mounted) return;
       setState(() => _isSubmitting = false);
 
-      // 4. Show Success Dialog with the actual generated ID
       showDialog(
         context: context,
         barrierDismissible: false,

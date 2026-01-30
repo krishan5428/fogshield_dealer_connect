@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
@@ -7,6 +8,7 @@ import 'package:fogshield_dealer_connect/features/profile/presentation/providers
 import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
 import 'package:fogshield_dealer_connect/features/profile/presentation/widgets/profile_picture_picker.dart';
 
+@RoutePage()
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
 
@@ -49,7 +51,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
   void _saveChanges() async {
     if (_formKey.currentState!.validate()) {
-// The updateProfile method now handles persistent storage internally
       await ref.read(profileProvider.notifier).updateProfile(
         name: _nameController.text,
         email: _emailController.text,
@@ -65,11 +66,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
           title: 'Profile Updated',
           message: 'Your changes have been saved securely.',
         );
-        Navigator.pop(context);
+        context.router.back();
       }
     }
-
-
   }
 
   @override
@@ -133,7 +132,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
               CustomButton(
                 text: 'CANCEL',
                 isOutlined: true,
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => context.router.back(),
               ),
             ],
           ),

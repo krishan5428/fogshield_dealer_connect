@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
@@ -39,6 +40,7 @@ final filteredHistoryProvider = Provider<AsyncValue<List<Quotation>>>((ref) {
   });
 });
 
+@RoutePage()
 class QuotationHistoryPage extends ConsumerWidget {
   const QuotationHistoryPage({super.key});
 
@@ -84,11 +86,6 @@ class QuotationHistoryPage extends ConsumerWidget {
           ),
         ],
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {},
-      //   backgroundColor: AppColors.colorCompanyPrimary,
-      //   child: const Icon(Icons.add, color: Colors.white),
-      // ),
     );
   }
 

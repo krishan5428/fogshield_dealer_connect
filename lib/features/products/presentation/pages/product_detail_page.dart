@@ -1,36 +1,94 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
-import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_image_carousel.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/quantity_selector.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
+import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
 
-class ProductDetailPage extends StatelessWidget {
+@RoutePage()
+class ProductDetailPage extends ConsumerStatefulWidget {
   final Product product;
-  final bool showQuotationActions; // New flag to control visibility
+  final bool showQuotationActions;
 
   const ProductDetailPage({
     super.key,
     required this.product,
-    this.showQuotationActions = false, // Defaults to false for catalog/sidebar view
+    this.showQuotationActions = false,
   });
+
+  @override
+  ConsumerState<ProductDetailPage> createState() => _ProductDetailPageState();
+}
+
+class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
+  int _quantity = 1;
+  bool _isInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize quantity from cart only once when page loads
+    if (!_isInitialized) {
+      final cartQty = ref.read(cartProvider.notifier).getQuantity(widget.product.model);
+      // If item is in cart, use that quantity. If not, default to 1.
+      _quantity = cartQty > 0 ? cartQty : 0;
+      _isInitialized = true;
+    }
+  }
+
+  // Helper to update cart immediately
+  void _updateCart(int qty) {
+    ref.read(cartProvider.notifier).updateProductQuantity(
+      product: widget.product,
+      quantity: qty,
+    );
+  }
+
+  void _onConfirmSelection() {
+    // Ensure the current quantity is set (handles the case where user accepts default '1' without changing selector)
+    _updateCart(_quantity);
+    context.router.back(); // Changed to use AutoRoute pop, though Navigator.pop works too
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: CustomAppBar(title: product.name),
+      appBar: CustomAppBar(title: widget.product.name),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ProductImageCarousel(
-              images: [
-                product.imagePath,
-                'assets/product/foggshield_image_1.png', // Secondary view mockup
-              ],
+            // Fixed: Removed zoom gesture and carousel dots (pill)
+            // Showing a static container since there is only one image
+            Container(
+              height: 300,
+              width: double.infinity,
+              color: AppColors.lightGrey,
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    widget.product.imagePath,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.broken_image_outlined,
+                          size: 80,
+                          color: AppColors.grey,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(20),
@@ -45,20 +103,21 @@ class ProductDetailPage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              product.name.toUpperCase(),
+                              widget.product.name.toUpperCase(),
                               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5),
                             ),
                             Text(
-                              product.model,
+                              widget.product.model,
                               style: const TextStyle(color: AppColors.disabledGrey, fontWeight: FontWeight.w600, fontSize: 13),
                             ),
                           ],
                         ),
                       ),
+                      // Made badge smaller
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(8)),
-                        child: const Text('AVAILABLE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900)),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(6)),
+                        child: const Text('AVAILABLE', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900)),
                       ),
                     ],
                   ),
@@ -72,14 +131,14 @@ class ProductDetailPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('END USER PRICE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppColors.colorAccent)),
-                          Text(product.formattedPrice, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.colorCompanyPrimary)),
+                          Text(widget.product.formattedPrice, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: AppColors.colorCompanyPrimary)),
                         ],
                       ),
                       const SizedBox(width: 16),
                       Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: Text(
-                          'MRP: ${product.formattedMrp}',
+                          'MRP: ${widget.product.formattedMrp}',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -96,33 +155,35 @@ class ProductDetailPage extends StatelessWidget {
 
                   const Text('SPECIFICATIONS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.colorAccent)),
                   const SizedBox(height: 16),
-                  _buildDetailItem(Icons.verified_user_rounded, 'Warranty: ${product.warranty} Year(s)'),
-                  _buildDetailItem(Icons.info_outline_rounded, product.description),
-                  _buildDetailItem(Icons.bolt_rounded, 'Coverage Area: ${product.coverage}'),
-                  _buildDetailItem(Icons.category_rounded, 'Category: ${product.category} Series'),
+                  _buildDetailItem(Icons.verified_user_rounded, 'Warranty: ${widget.product.warranty} Year(s)'),
+                  _buildDetailItem(Icons.info_outline_rounded, widget.product.description),
+                  _buildDetailItem(Icons.bolt_rounded, 'Coverage Area: ${widget.product.coverage}'),
+                  _buildDetailItem(Icons.category_rounded, 'Category: ${widget.product.category} Series'),
 
                   // Conditional Section for Quotation Flow
-                  if (showQuotationActions) ...[
+                  if (widget.showQuotationActions) ...[
                     const SizedBox(height: 32),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('ORDER QUANTITY', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
-                        QuantitySelector(onChanged: (qty) {}),
+                        QuantitySelector(
+                          initialValue: _quantity,
+                          onChanged: (qty) {
+                            setState(() {
+                              _quantity = qty;
+                            });
+                            // LIVE UPDATE: Update cart immediately on quantity change
+                            _updateCart(qty);
+                          },
+                        ),
                       ],
                     ),
                     const SizedBox(height: 40),
                     CustomButton(
                       text: 'ADD TO QUOTATION',
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: _onConfirmSelection,
                       icon: Icons.add_chart_rounded,
-                    ),
-                    const SizedBox(height: 12),
-                    CustomButton(
-                      text: 'DOWNLOAD DATASHEET',
-                      isOutlined: true,
-                      onPressed: () {},
-                      icon: Icons.file_download_outlined,
                     ),
                     const SizedBox(height: 40),
                   ],

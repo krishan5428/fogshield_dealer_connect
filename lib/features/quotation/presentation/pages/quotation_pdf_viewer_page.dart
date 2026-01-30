@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
@@ -8,6 +9,7 @@ import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets
 import 'package:fogshield_dealer_connect/features/quotation/presentation/pages/quotation_detail_page.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
+@RoutePage()
 class QuotationPdfViewerPage extends ConsumerStatefulWidget {
   final String quotationId;
 
@@ -32,7 +34,6 @@ class _QuotationPdfViewerPageState extends ConsumerState<QuotationPdfViewerPage>
     _generatePdf();
   }
 
-  /// Generates the PDF bytes from the database data
   Future<void> _generatePdf() async {
     try {
       final detail = await ref.read(quotationDetailProvider(widget.quotationId).future);
@@ -105,10 +106,7 @@ class _QuotationPdfViewerPageState extends ConsumerState<QuotationPdfViewerPage>
           autoSpacing: true,
           pageFling: true,
           pageSnap: true,
-          // Requirement: HD/High Quality. Native renderers handle this automatically.
-          // Requirement: Background white.
           backgroundColor: Colors.white,
-          // Requirement: Zoomed view by default. FitPolicy.WIDTH ensures it fills width.
           fitPolicy: FitPolicy.WIDTH,
           preventLinkNavigation: false,
           onRender: (pages) {
@@ -152,7 +150,7 @@ class _QuotationPdfViewerPageState extends ConsumerState<QuotationPdfViewerPage>
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => context.router.back(),
               child: const Text('Go Back'),
             )
           ],

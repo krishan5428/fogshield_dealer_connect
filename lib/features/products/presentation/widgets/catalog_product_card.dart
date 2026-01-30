@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/product_detail_page.dart';
 

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
@@ -7,60 +8,87 @@ import 'package:fogshield_dealer_connect/features/products/presentation/widgets/
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/category_chips.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_search_bar.dart';
 
+final searchQueryProvider = StateProvider<String>((ref) => '');
+
+@RoutePage()
 class ProductCatalogPage extends ConsumerWidget {
   const ProductCatalogPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the selected category from chips
-    final filter = ref.watch(selectedCategoryProvider);
+    final categoryFilter = ref.watch(selectedCategoryProvider);
+    final searchQuery = ref.watch(searchQueryProvider).toLowerCase();
 
-    // Filter categories based on selection
-    final proSeries = fogShieldProducts.where((p) => p.category == 'PRO').toList();
-    final nexusSeries = fogShieldProducts.where((p) => p.category == 'NEXUS').toList();
-    final accessories = fogShieldProducts.where((p) => p.category == 'ACCESSORY' || p.category == 'FLUID').toList();
-    final software = fogShieldProducts.where((p) => p.category == 'SOFTWARE' || p.category == 'SERVICE').toList();
+    List<Product> filteredProducts = fogShieldProducts;
+
+    if (categoryFilter != 'ALL') {
+      if (categoryFilter == 'SOFTWARE') {
+        filteredProducts = fogShieldProducts.where((p) => p.category == 'SOFTWARE' || p.category == 'SERVICE').toList();
+      } else if (categoryFilter == 'ACCESSORY') {
+        filteredProducts = fogShieldProducts.where((p) => p.category == 'ACCESSORY').toList();
+      } else if (categoryFilter == 'FLUID') {
+        filteredProducts = fogShieldProducts.where((p) => p.category == 'FLUID').toList();
+      } else {
+        filteredProducts = fogShieldProducts.where((p) => p.category == categoryFilter).toList();
+      }
+    }
+
+    if (searchQuery.isNotEmpty) {
+      filteredProducts = filteredProducts.where((p) {
+        final nameMatch = p.name.toLowerCase().contains(searchQuery);
+        final modelMatch = p.model.toLowerCase().contains(searchQuery);
+        return nameMatch || modelMatch;
+      }).toList();
+    }
+
+    final proSeries = filteredProducts.where((p) => p.category == 'PRO').toList();
+    final nexusSeries = filteredProducts.where((p) => p.category == 'NEXUS').toList();
+    final accessories = filteredProducts.where((p) => p.category == 'ACCESSORY' || p.category == 'FLUID').toList();
+    final software = filteredProducts.where((p) => p.category == 'SOFTWARE' || p.category == 'SERVICE').toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: const CustomAppBar(title: 'Product Catalog'),
       body: Column(
         children: [
-          // Fixed Header Section
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: ProductSearchBar(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: ProductSearchBar(
+              onChanged: (value) {
+                ref.read(searchQueryProvider.notifier).state = value;
+              },
+            ),
           ),
           const CategoryChips(),
 
-          // Scrollable Content
           Expanded(
-            child: SingleChildScrollView(
+            child: filteredProducts.isEmpty
+                ? _buildEmptyState()
+                : SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logic to show/hide sections based on filter
-                  if (filter == 'ALL' || filter == 'PRO') ...[
+                  if (proSeries.isNotEmpty) ...[
                     _buildSectionHeader('FOGSHIELD PRO SERIES', Icons.bolt_rounded),
                     _buildProductRow(proSeries),
                     const SizedBox(height: 32),
                   ],
 
-                  if (filter == 'ALL' || filter == 'NEXUS') ...[
+                  if (nexusSeries.isNotEmpty) ...[
                     _buildSectionHeader('FOGSHIELD NEXUS SERIES', Icons.auto_awesome_rounded),
                     _buildProductRow(nexusSeries),
                     const SizedBox(height: 32),
                   ],
 
-                  if (filter == 'ALL' || filter == 'ACCESSORY' || filter == 'FLUID') ...[
+                  if (accessories.isNotEmpty) ...[
                     _buildSectionHeader('ACCESSORIES & FLUIDS', Icons.settings_input_component_rounded),
                     _buildProductRow(accessories),
                     const SizedBox(height: 32),
                   ],
 
-                  if (filter == 'ALL' || filter == 'SOFTWARE') ...[
+                  if (software.isNotEmpty) ...[
                     _buildSectionHeader('SOFTWARE & SERVICES', Icons.cloud_done_rounded),
                     _buildProductRow(software),
                     const SizedBox(height: 32),
@@ -77,8 +105,6 @@ class ProductCatalogPage extends ConsumerWidget {
   }
 
   Widget _buildProductRow(List<Product> products) {
-    if (products.isEmpty) return const SizedBox();
-
     return Column(
       children: List.generate((products.length / 2).ceil(), (index) {
         final firstIdx = index * 2;
@@ -115,6 +141,25 @@ class ProductCatalogPage extends ConsumerWidget {
               fontWeight: FontWeight.w900,
               letterSpacing: 1.2,
               color: AppColors.colorAccent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off_rounded, size: 64, color: AppColors.grey.withOpacity(0.5)),
+          const SizedBox(height: 16),
+          const Text(
+            'No products found matching your search.',
+            style: TextStyle(
+              color: AppColors.disabledGrey,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

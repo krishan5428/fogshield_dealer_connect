@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
@@ -5,6 +6,7 @@ import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/loading_indicator.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
+@RoutePage()
 class VideoPlayerPage extends StatefulWidget {
   final String? videoUrl;
 
@@ -36,15 +38,12 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     }
 
     try {
-      // Convert standard Google Drive view link to a direct stream link
       String finalUrl = widget.videoUrl!;
       if (finalUrl.contains('drive.google.com')) {
-        // Extract the File ID using RegExp
         final regExp = RegExp(r'\/d\/([a-zA-Z0-9_-]+)');
         final match = regExp.firstMatch(finalUrl);
         if (match != null && match.groupCount >= 1) {
           final fileId = match.group(1);
-          // Use the direct download/stream URL for Google Drive
           finalUrl = 'https://drive.google.com/uc?export=download&id=$fileId';
         }
       }

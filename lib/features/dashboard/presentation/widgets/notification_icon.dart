@@ -1,6 +1,6 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
 class NotificationIcon extends StatelessWidget {
@@ -14,7 +14,7 @@ class NotificationIcon extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         IconButton(
-          onPressed: () => context.push(RouteNames.notifications),
+          onPressed: () => context.router.push(const NotificationsRoute()),
           icon: const Icon(Icons.notifications_none_rounded, size: 28),
         ),
         if (count > 0)

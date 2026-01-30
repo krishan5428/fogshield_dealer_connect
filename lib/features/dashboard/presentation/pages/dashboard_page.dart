@@ -1,12 +1,13 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/sidebar_drawer.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/notification_icon.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/greeting_section.dart';
-import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/stats_overview.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/quick_action_buttons.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/recent_activity.dart';
 
+@RoutePage()
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
@@ -33,8 +34,7 @@ class DashboardPage extends StatelessWidget {
               'assets/icons/logo.png',
               height: 28,
               width: 28,
-              errorBuilder: (context, error, stackTrace) =>
-              const SizedBox(height: 28, width: 28),
+              errorBuilder: (context, error, stackTrace) => const SizedBox(height: 28, width: 28),
             ),
             const SizedBox(width: 8),
             const Text(
@@ -62,8 +62,6 @@ class DashboardPage extends StatelessWidget {
             SizedBox(height: 24),
             GreetingSection(),
             SizedBox(height: 28),
-            // StatsOverview(),
-            // SizedBox(height: 32),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.0),
               child: Text(

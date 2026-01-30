@@ -1,16 +1,16 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/features/offers/presentation/widgets/offer_card.dart';
 import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 
+@RoutePage()
 class OffersPage extends StatelessWidget {
   const OffersPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Real-time data simulation with unique values for each offer
     final List<Offer> availableOffers = [
       Offer(
         id: '1',
@@ -71,8 +71,8 @@ class OffersPage extends StatelessWidget {
             discount: offer.discount,
             code: offer.code,
             expiryDate: offer.expiryDate,
-            // Passing the specific offer object to the detail page
-            onTap: () => context.push(RouteNames.offerDetail, extra: offer),
+            // Navigate using generated route object and pass parameters
+            onTap: () => context.router.push(OfferDetailRoute(offer: offer)),
           );
         },
       ),

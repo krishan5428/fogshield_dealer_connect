@@ -1,7 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/widgets/auth_header.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/widgets/login_form.dart';
@@ -9,37 +9,40 @@ import 'package:fogshield_dealer_connect/features/auth/presentation/providers/au
 import 'package:fogshield_dealer_connect/features/auth/presentation/state/auth_state.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
 
-class LoginPage extends ConsumerWidget {
+@RoutePage()
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-// Listens for authentication status changes
+  ConsumerState<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends ConsumerState<LoginPage> {
+  bool _hasShownError = false;
+
+  @override
+  Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
-      if (next.status == AuthStatus.error) {
-        CustomSnackbar.showError(
-          context: context,
-          title: 'Login Failed',
-          message: next.errorMessage,
-        );
-      } else if (next.status == AuthStatus.authenticated) {
-// Navigate to dashboard if login is successful or session found
-        context.go(RouteNames.dashboard);
+      if (next.status == AuthStatus.error && !_hasShownError) {
+        _hasShownError = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          CustomSnackbar.showError(
+            context: context,
+            title: 'Login Failed',
+            message: next.errorMessage ?? 'Invalid credentials',
+          );
+          ref.read(authProvider.notifier).clearError();
+        });
+      }
+
+      if (previous?.status == AuthStatus.error && next.status != AuthStatus.error) {
+        _hasShownError = false;
+      }
+
+      if (next.status == AuthStatus.authenticated) {
+        context.router.replace(const DashboardRoute());
       }
     });
-
-    final authState = ref.watch(authProvider);
-
-// Show a loading indicator while checking secure storage on app launch
-    if (authState.status == AuthStatus.initial) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(
-            color: AppColors.colorCompanyPrimary,
-          ),
-        ),
-      );
-    }
 
     return Scaffold(
       body: SafeArea(
@@ -75,7 +78,7 @@ class LoginPage extends ConsumerWidget {
                   children: [
                     const Text("Don't have an account? "),
                     GestureDetector(
-                      onTap: () => context.push(RouteNames.signup),
+                      onTap: () => context.router.push(const SignupRoute()),
                       child: const Text(
                         "Sign Up",
                         style: TextStyle(
@@ -92,7 +95,5 @@ class LoginPage extends ConsumerWidget {
         ),
       ),
     );
-
-
   }
 }

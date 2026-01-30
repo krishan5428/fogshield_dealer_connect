@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
 class ShareButton extends StatelessWidget {
   final String label;

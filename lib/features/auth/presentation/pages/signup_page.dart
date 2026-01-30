@@ -1,7 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/widgets/auth_header.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/widgets/signup_form.dart';
@@ -9,20 +9,49 @@ import 'package:fogshield_dealer_connect/features/auth/presentation/providers/au
 import 'package:fogshield_dealer_connect/features/auth/presentation/state/auth_state.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
 
-class SignupPage extends ConsumerWidget {
+@RoutePage()
+class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends ConsumerState<SignupPage> {
+  @override
+  Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
       if (next.status == AuthStatus.error) {
-        CustomSnackbar.showError(
-          context: context,
-          title: 'Registration Failed',
-          message: next.errorMessage,
-        );
-      } else if (next.status == AuthStatus.authenticated) {
-        context.go(RouteNames.dashboard);
+        if (previous?.status != AuthStatus.error || previous?.errorMessage != next.errorMessage) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            CustomSnackbar.showError(
+              context: context,
+              title: 'Registration Failed',
+              message: next.errorMessage ?? 'An error occurred',
+            );
+            ref.read(authProvider.notifier).clearError();
+          });
+        }
+      }
+
+      if (next.status == AuthStatus.signedUp) {
+        if (previous?.status != AuthStatus.signedUp) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            CustomSnackbar.showSuccess(
+              context: context,
+              title: 'Success!',
+              message: 'Account created successfully. Please login.',
+            );
+
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                ref.read(authProvider.notifier).clearSignedUp();
+                // Navigate back to login using replacement
+                context.router.replaceAll([const LoginRoute()]);
+              }
+            });
+          });
+        }
       }
     });
 
@@ -58,7 +87,7 @@ class SignupPage extends ConsumerWidget {
                   children: [
                     const Text("Already have an account? "),
                     GestureDetector(
-                      onTap: () => context.pop(),
+                      onTap: () => context.router.back(),
                       child: const Text(
                         "Login",
                         style: TextStyle(

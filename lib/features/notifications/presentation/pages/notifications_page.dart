@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
@@ -6,6 +7,7 @@ import 'package:fogshield_dealer_connect/features/notifications/presentation/pro
 import 'package:fogshield_dealer_connect/features/notifications/presentation/widgets/notification_tile.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
+@RoutePage()
 class NotificationsPage extends ConsumerWidget {
   const NotificationsPage({super.key});
 
@@ -65,9 +67,7 @@ class NotificationsPage extends ConsumerWidget {
                   message: notification.message,
                   time: 'Just now',
                   isRead: notification.isRead,
-                  icon: notification.type == 'offer'
-                      ? Icons.local_offer_outlined
-                      : Icons.description_outlined,
+                  icon: notification.type == 'offer' ? Icons.local_offer_outlined : Icons.description_outlined,
                 );
               },
             ),

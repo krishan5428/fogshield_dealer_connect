@@ -1,10 +1,9 @@
-enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
+enum AuthStatus { initial, loading, authenticated, unauthenticated, error, signedUp }
 
 class AuthState {
   final AuthStatus status;
   final String? errorMessage;
   final bool rememberMe;
-// Added to store user info if needed
   final String? phoneNumber;
 
   AuthState({

@@ -1,23 +1,22 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/datasheet_card.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 
+@RoutePage()
 class DatasheetsPage extends StatelessWidget {
   const DatasheetsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // List of datasheets with Google Drive links
-    // Added 'videoUrl' for the demo and kept 'url' for PDFs
     final List<Map<String, String>> datasheets = [
       {
         'title': 'Product Demonstration Video',
         'sku': 'VIDEO-DEMO-01',
         'fileSize': 'Streaming',
-        'url': '', // No PDF for this specific card
+        'url': '',
         'videoUrl': 'https://drive.google.com/file/d/1yZPS8AXLVqoja0wCRPLoFL5xtlMPc2jf/view?usp=drive_link',
       },
       {
@@ -76,7 +75,6 @@ class DatasheetsPage extends StatelessWidget {
           final String? videoUrl = datasheet['videoUrl'];
           final String? pdfUrl = datasheet['url'];
 
-          // Determine if this is a video-only card (no PDF URL)
           final bool isVideoOnly = videoUrl != null && videoUrl.isNotEmpty && (pdfUrl == null || pdfUrl.isEmpty);
 
           return DatasheetCard(
@@ -85,8 +83,8 @@ class DatasheetsPage extends StatelessWidget {
             fileSize: datasheet['fileSize']!,
             showOnlyVideo: isVideoOnly,
             onTap: (pdfUrl != null && pdfUrl.isNotEmpty)
-                ? () => context.push(RouteNames.datasheetViewer, extra: pdfUrl)
-                : () {}, // Empty callback if no PDF
+                ? () => context.router.push(DatasheetViewerRoute(pdfUrl: pdfUrl))
+                : () {},
             onDownload: () {
               if (pdfUrl != null && pdfUrl.isNotEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -99,7 +97,7 @@ class DatasheetsPage extends StatelessWidget {
               }
             },
             onWatchVideo: (videoUrl != null && videoUrl.isNotEmpty)
-                ? () => context.push(RouteNames.videoPlayer, extra: videoUrl)
+                ? () => context.router.push(VideoPlayerRoute(videoUrl: videoUrl))
                 : null,
           );
         },

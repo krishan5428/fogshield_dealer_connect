@@ -25,6 +25,15 @@ class _QuantitySelectorState extends State<QuantitySelector> {
   }
 
   @override
+  void didUpdateWidget(QuantitySelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Sync internal state if the parent widget updates the value (e.g. cart cleared)
+    if (widget.initialValue != oldWidget.initialValue) {
+      _quantity = widget.initialValue;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
@@ -35,7 +44,8 @@ class _QuantitySelectorState extends State<QuantitySelector> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildButton(Icons.remove, () {
-            if (_quantity > 1) {
+            // Changed from > 1 to > 0 to allow removing the item (setting to 0)
+            if (_quantity > 0) {
               setState(() => _quantity--);
               widget.onChanged(_quantity);
             }

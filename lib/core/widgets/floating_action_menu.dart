@@ -60,7 +60,7 @@ class _FloatingActionMenuState extends State<FloatingActionMenu>
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
-                          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
                         ),
                         child: Text(
                           item.label,
