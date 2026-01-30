@@ -1,20 +1,21 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/drawer_header.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/drawer_menu_item.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/providers/auth_providers.dart';
 
 class SidebarDrawer extends ConsumerWidget {
   const SidebarDrawer({super.key});
 
-  // CHANGED: Helper method for simpler navigation calls
-  void _navTo(BuildContext context, String routeName) {
+  // Helper method for AutoRoute navigation
+  void _navTo(BuildContext context, PageRouteInfo route) {
     // Close the drawer first
     Navigator.pop(context);
-    // Then navigate
-    Navigator.pushNamed(context, routeName);
+    // Then navigate using AutoRoute
+    context.router.push(route);
   }
 
   @override
@@ -39,19 +40,20 @@ class SidebarDrawer extends ConsumerWidget {
                 DrawerMenuItem(
                   icon: Icons.person_outline_rounded,
                   title: 'My Profile',
-                  onTap: () => _navTo(context, RouteNames.profile),
+                  onTap: () => _navTo(context, const ProfileRoute()),
                 ),
                 const SizedBox(height: 4),
                 DrawerMenuItem(
                   icon: Icons.history_rounded,
                   title: 'Quotation History',
-                  onTap: () => _navTo(context, RouteNames.quotationHistory),
+                  // FIXED: Now navigating to QuotationHistoryRoute using context.router
+                  onTap: () => _navTo(context, const QuotationHistoryRoute()),
                 ),
                 const SizedBox(height: 4),
                 DrawerMenuItem(
                   icon: Icons.inventory_2_outlined,
                   title: 'Product Catalog',
-                  onTap: () => _navTo(context, RouteNames.productCatalog),
+                  onTap: () => _navTo(context, const ProductCatalogRoute()),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -64,13 +66,13 @@ class SidebarDrawer extends ConsumerWidget {
                 DrawerMenuItem(
                   icon: Icons.help_outline_rounded,
                   title: 'Help & Support',
-                  onTap: () => _navTo(context, RouteNames.helpSupport),
+                  onTap: () => _navTo(context, const HelpSupportRoute()),
                 ),
                 const SizedBox(height: 4),
                 DrawerMenuItem(
                   icon: Icons.info_outline_rounded,
                   title: 'About Us',
-                  onTap: () => _navTo(context, RouteNames.aboutUs),
+                  onTap: () => _navTo(context, const AboutUsRoute()),
                 ),
               ],
             ),
@@ -88,10 +90,10 @@ class SidebarDrawer extends ConsumerWidget {
               textColor: const Color(0xFF8B0000),
               iconColor: const Color(0xFF8B0000),
               onTap: () {
-                // Close the drawer
                 Navigator.pop(context);
-                // Call logout. AuthGate will see the state change and switch the root widget to Login.
                 ref.read(authProvider.notifier).logout();
+                // Redirecting to login manually just in case
+                context.router.replaceAll([const LoginRoute()]);
               },
             ),
           ),

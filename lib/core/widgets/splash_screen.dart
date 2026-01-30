@@ -1,9 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 
+@RoutePage()
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -24,7 +25,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _setFullScreen() {
-    // Set fullscreen immersive mode
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.immersiveSticky,
       overlays: [],
@@ -32,7 +32,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _restoreSystemUI() {
-    // Restore system UI when leaving splash
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.edgeToEdge,
       overlays: SystemUiOverlay.values,
@@ -43,7 +42,6 @@ class _SplashScreenState extends State<SplashScreen> {
     _controller = VideoPlayerController.asset('assets/icons/logo_video.mp4');
 
     try {
-      // Initialize the video
       await _controller.initialize();
 
       if (mounted && !_hasNavigated) {
@@ -51,33 +49,28 @@ class _SplashScreenState extends State<SplashScreen> {
           _isInitialized = true;
         });
 
-        // Set video to not loop
         _controller.setLooping(false);
-
-        // Start playing
         await _controller.play();
 
-        // Wait for exactly 3500ms
+        // Video logic preserved: 6.5s delay
         await Future.delayed(const Duration(milliseconds: 6500));
 
-        // Navigate after 3.5 seconds
         if (mounted && !_hasNavigated) {
           _hasNavigated = true;
           _restoreSystemUI();
 
-          // Use pushReplacement to prevent going back to splash
-          context.pushReplacement(RouteNames.login);
+          // AutoRoute: replaceAll ensures user can't go back to splash
+          context.router.replaceAll([const LoginRoute()]);
         }
       }
     } catch (e) {
       debugPrint("Splash Video Error: $e");
-      // Fallback: wait 3.5 seconds then navigate
       if (mounted && !_hasNavigated) {
         await Future.delayed(const Duration(milliseconds: 3500));
         if (mounted && !_hasNavigated) {
           _hasNavigated = true;
           _restoreSystemUI();
-          context.pushReplacement(RouteNames.login);
+          context.router.replaceAll([const LoginRoute()]);
         }
       }
     }
@@ -94,7 +87,6 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      // Remove SafeArea to make it fullscreen
       body: _isInitialized
           ? SizedBox.expand(
         child: FittedBox(
@@ -108,7 +100,6 @@ class _SplashScreenState extends State<SplashScreen> {
       )
           : Container(
         color: Colors.black,
-        // Show black screen while initializing
       ),
     );
   }

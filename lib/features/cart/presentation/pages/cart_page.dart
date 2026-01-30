@@ -1,5 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
@@ -8,16 +10,14 @@ import 'package:fogshield_dealer_connect/features/cart/presentation/widgets/cart
 import 'package:fogshield_dealer_connect/features/cart/presentation/widgets/cart_summary.dart';
 import 'package:fogshield_dealer_connect/features/cart/presentation/widgets/empty_cart_view.dart';
 import 'package:fogshield_dealer_connect/core/widgets/delete_confirmation_dialog.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
 
+@RoutePage()
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the actual cart state from Riverpod
     final cartState = ref.watch(cartProvider);
     final items = cartState.items;
 
@@ -112,7 +112,8 @@ class CartPage extends ConsumerWidget {
                   CustomButton(
                     text: 'PROCEED TO FINAL REVIEW',
                     icon: Icons.assignment_turned_in_outlined,
-                    onPressed: () => context.push(RouteNames.quotationReview),
+                    // FIXED: Use the generated Route class instead of pushNamed
+                    onPressed: () => context.router.push(const QuotationReviewRoute()),
                   ),
                 ],
               ),

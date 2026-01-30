@@ -1,7 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 
 class QuickActionButtons extends StatelessWidget {
   const QuickActionButtons({super.key});
@@ -26,7 +26,7 @@ class QuickActionButtons extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            onTap: () => context.push(RouteNames.quotationForm),
+            onTap: () => context.router.push(const QuotationFormRoute()),
           ),
           _ActionButton(
             label: 'Quotation\nHistory',
@@ -36,7 +36,7 @@ class QuickActionButtons extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            onTap: () => context.push(RouteNames.quotationHistory),
+            onTap: () => context.router.push(const QuotationHistoryRoute()),
           ),
           _ActionButton(
             label: 'Offers',
@@ -46,7 +46,7 @@ class QuickActionButtons extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            onTap: () => context.push(RouteNames.offers),
+            onTap: () => context.router.push(const OffersRoute()),
           ),
           _ActionButton(
             label: 'Resources',
@@ -56,7 +56,7 @@ class QuickActionButtons extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            onTap: () => context.push(RouteNames.datasheets),
+            onTap: () => context.router.push(const DatasheetsRoute()),
           ),
         ],
       ),

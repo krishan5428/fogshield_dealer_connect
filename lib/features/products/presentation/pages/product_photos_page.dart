@@ -1,8 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/photo_grid_item.dart';
 import 'package:fogshield_dealer_connect/core/widgets/image_fullscreen_viewer.dart';
 
+@RoutePage()
 class ProductPhotosPage extends StatelessWidget {
   const ProductPhotosPage({super.key});
 
@@ -28,6 +30,8 @@ class ProductPhotosPage extends StatelessWidget {
             imagePath: path,
             label: label,
             onTap: () {
+              // Fullscreen viewer can remain a standard MaterialPageRoute for now
+              // unless you want to make it a formal @RoutePage too.
               Navigator.push(
                 context,
                 MaterialPageRoute(

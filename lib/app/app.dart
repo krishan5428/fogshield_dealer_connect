@@ -9,8 +9,8 @@ class fogshieldApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ✅ Watch the router provider so changes in auth state trigger redirection
-    final router = ref.watch(routerProvider);
+    // 1. Watch the router provider
+    final appRouter = ref.watch(appRouterProvider);
 
     const Color bottomAreaColor = Colors.white;
 
@@ -18,8 +18,10 @@ class fogshieldApp extends ConsumerWidget {
       title: 'Fogshield Dealer Connect',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.mainTheme,
-      // ✅ Use the config provided by Riverpod
-      routerConfig: router,
+
+      // 2. Use AutoRoute configuration
+      routerConfig: appRouter.config(),
+
       builder: (context, child) {
         return AnnotatedRegion<SystemUiOverlayStyle>(
           value: const SystemUiOverlayStyle(

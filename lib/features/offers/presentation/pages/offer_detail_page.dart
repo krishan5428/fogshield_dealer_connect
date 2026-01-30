@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
@@ -6,6 +7,7 @@ import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
 import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
 
+@RoutePage()
 class OfferDetailPage extends StatelessWidget {
   final Offer? offer;
 
@@ -13,7 +15,6 @@ class OfferDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Safety check for null data
     if (offer == null) {
       return const Scaffold(body: Center(child: Text('Offer details not found.')));
     }
@@ -98,7 +99,6 @@ class OfferDetailPage extends StatelessWidget {
                           text: 'COPY TO CLIPBOARD',
                           size: ButtonSize.small,
                           onPressed: () {
-                            // Implemented functional copy logic
                             Clipboard.setData(ClipboardData(text: offer!.code));
                             CustomSnackbar.showSuccess(
                               context: context,

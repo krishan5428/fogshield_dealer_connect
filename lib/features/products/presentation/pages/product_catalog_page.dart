@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
@@ -7,20 +8,17 @@ import 'package:fogshield_dealer_connect/features/products/presentation/widgets/
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/category_chips.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_search_bar.dart';
 
-/// Provider to manage the search query text
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
+@RoutePage()
 class ProductCatalogPage extends ConsumerWidget {
   const ProductCatalogPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the selected category from chips
     final categoryFilter = ref.watch(selectedCategoryProvider);
-    // Watch the search query from the search bar
     final searchQuery = ref.watch(searchQueryProvider).toLowerCase();
 
-    // 1. First, filter by Category if not 'ALL'
     List<Product> filteredProducts = fogShieldProducts;
 
     if (categoryFilter != 'ALL') {
@@ -35,7 +33,6 @@ class ProductCatalogPage extends ConsumerWidget {
       }
     }
 
-    // 2. Then, filter by Search Query (Name or Model/SKU)
     if (searchQuery.isNotEmpty) {
       filteredProducts = filteredProducts.where((p) {
         final nameMatch = p.name.toLowerCase().contains(searchQuery);
@@ -44,7 +41,6 @@ class ProductCatalogPage extends ConsumerWidget {
       }).toList();
     }
 
-    // Split filtered list into logical groups for the section headers
     final proSeries = filteredProducts.where((p) => p.category == 'PRO').toList();
     final nexusSeries = filteredProducts.where((p) => p.category == 'NEXUS').toList();
     final accessories = filteredProducts.where((p) => p.category == 'ACCESSORY' || p.category == 'FLUID').toList();
@@ -55,7 +51,6 @@ class ProductCatalogPage extends ConsumerWidget {
       appBar: const CustomAppBar(title: 'Product Catalog'),
       body: Column(
         children: [
-          // Fixed Header Section
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: ProductSearchBar(
@@ -66,7 +61,6 @@ class ProductCatalogPage extends ConsumerWidget {
           ),
           const CategoryChips(),
 
-          // Scrollable Content
           Expanded(
             child: filteredProducts.isEmpty
                 ? _buildEmptyState()

@@ -1,22 +1,22 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/stepper_indicator.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_search_bar.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/category_chips.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_grid.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
 
+@RoutePage()
 class ProductSelectionPage extends ConsumerWidget {
   const ProductSelectionPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the cart state to get real-time total items
     final cartItems = ref.watch(cartProvider).items;
     final totalItems = cartItems.fold(0, (sum, item) => sum + item.quantity);
 
@@ -30,7 +30,6 @@ class ProductSelectionPage extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: ProductSearchBar(
               onChanged: (value) {
-                // Update the search provider defined in product_grid.dart
                 ref.read(productSelectionSearchProvider.notifier).state = value;
               },
             ),
@@ -58,7 +57,7 @@ class ProductSelectionPage extends ConsumerWidget {
               ? 'REVIEW SELECTION ($totalItems ${totalItems == 1 ? 'ITEM' : 'ITEMS'})'
               : 'REVIEW SELECTION (0 ITEMS)',
           onPressed: totalItems > 0
-              ? () => context.push(RouteNames.cart)
+              ? () => context.router.push(const CartRoute())
               : null,
         ),
       ),

@@ -1,8 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 import 'package:fogshield_dealer_connect/core/database/app_database.dart';
 
 class QuotationListItem extends StatelessWidget {
@@ -20,7 +20,7 @@ class QuotationListItem extends StatelessWidget {
         border: Border.all(color: AppColors.grey.withOpacity(0.2)),
       ),
       child: InkWell(
-        onTap: () => context.push(RouteNames.quotationDetail, extra: quotation.id),
+        onTap: () => context.router.push(QuotationDetailRoute(quotationId: quotation.id)),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -37,7 +37,6 @@ class QuotationListItem extends StatelessWidget {
                       color: AppColors.colorCompanyPrimary,
                     ),
                   ),
-                  // Note: QuotationStatusBadge removed per requirement
                   Text(
                     DateFormat('dd MMM yyyy').format(quotation.createdAt),
                     style: const TextStyle(fontSize: 11, color: AppColors.disabledGrey),

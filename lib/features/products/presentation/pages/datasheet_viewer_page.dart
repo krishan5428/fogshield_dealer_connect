@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
@@ -8,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
+@RoutePage()
 class DatasheetViewerPage extends StatefulWidget {
   final String? pdfUrl;
 
@@ -45,15 +47,12 @@ class _DatasheetViewerPageState extends State<DatasheetViewerPage> {
         errorMessage = null;
       });
 
-      // Download PDF from Google Drive
       final response = await http.get(Uri.parse(widget.pdfUrl!));
 
       if (response.statusCode == 200) {
-        // Get temporary directory
         final dir = await getTemporaryDirectory();
         final file = File('${dir.path}/temp_datasheet_${DateTime.now().millisecondsSinceEpoch}.pdf');
 
-        // Write PDF to file
         await file.writeAsBytes(response.bodyBytes);
 
         setState(() {
@@ -84,7 +83,6 @@ class _DatasheetViewerPageState extends State<DatasheetViewerPage> {
   }
 
   Future<void> _printPdf() async {
-    // Show message for print functionality
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -178,7 +176,6 @@ class _DatasheetViewerPageState extends State<DatasheetViewerPage> {
           else if (localPath != null)
               Column(
                 children: [
-                  // Page indicator
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     color: AppColors.grey.withOpacity(0.1),
@@ -192,7 +189,6 @@ class _DatasheetViewerPageState extends State<DatasheetViewerPage> {
                       ),
                     ),
                   ),
-                  // PDF Viewer
                   Expanded(
                     child: PDFView(
                       filePath: localPath!,
@@ -226,7 +222,6 @@ class _DatasheetViewerPageState extends State<DatasheetViewerPage> {
                   ),
                 ],
               ),
-          // Zoom controls
           if (!isLoading && errorMessage == null && localPath != null)
             Positioned(
               right: 16,
@@ -234,10 +229,6 @@ class _DatasheetViewerPageState extends State<DatasheetViewerPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // _buildFab(Icons.add, _zoomIn),
-                  // const SizedBox(height: 12),
-                  // _buildFab(Icons.remove, _zoomOut),
-                  // const SizedBox(height: 12),
                   _buildFab(Icons.fullscreen_exit_rounded, _resetZoom),
                 ],
               ),
@@ -260,12 +251,11 @@ class _DatasheetViewerPageState extends State<DatasheetViewerPage> {
 
   @override
   void dispose() {
-    // Clean up temporary file
     if (localPath != null) {
       try {
         File(localPath!).delete();
       } catch (e) {
-        // Ignore errors during cleanup
+        // Ignore
       }
     }
     super.dispose();

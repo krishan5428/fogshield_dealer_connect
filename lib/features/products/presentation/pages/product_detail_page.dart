@@ -1,13 +1,14 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
-// import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_image_carousel.dart'; // Removed as we are using single image view
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/quantity_selector.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
 import 'package:fogshield_dealer_connect/features/cart/presentation/providers/cart_providers.dart';
 
+@RoutePage()
 class ProductDetailPage extends ConsumerStatefulWidget {
   final Product product;
   final bool showQuotationActions;
@@ -49,7 +50,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage> {
   void _onConfirmSelection() {
     // Ensure the current quantity is set (handles the case where user accepts default '1' without changing selector)
     _updateCart(_quantity);
-    Navigator.pop(context);
+    context.router.back(); // Changed to use AutoRoute pop, though Navigator.pop works too
   }
 
   @override

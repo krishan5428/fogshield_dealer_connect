@@ -1,8 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/brochure_card.dart';
 
+@RoutePage()
 class BrochuresPage extends StatelessWidget {
   const BrochuresPage({super.key});
 

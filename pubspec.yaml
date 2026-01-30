@@ -13,14 +13,14 @@ dependencies:
   # State Management
   flutter_riverpod: ^2.5.1
 
+  # Navigation (UPDATED)
+  auto_route: ^11.1.0
+
   #image_picker
   image_picker: ^1.2.1
 
   #url_launcher
   url_launcher: ^6.3.2
-
-  # Navigation
-  go_router: ^14.0.0
 
   # Notifications & Toasts
   toastification: ^3.0.3
@@ -67,16 +67,17 @@ dev_dependencies:
   # Icon Generation
   flutter_launcher_icons: ^0.14.4
 
-  # Code Generation for Drift
+  # Code Generation for Drift & AutoRoute (UPDATED)
   drift_dev: ^2.20.1
   build_runner: ^2.4.8
+  auto_route_generator: ^10.4.0
 
 # Icon Configuration
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/icons/app_icon.png"
-  min_sdk_android: 21 # flutter_launcher_icons requires this for adaptive icons
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true

@@ -1,7 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/widgets/auth_header.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/widgets/login_form.dart';
@@ -9,6 +9,7 @@ import 'package:fogshield_dealer_connect/features/auth/presentation/providers/au
 import 'package:fogshield_dealer_connect/features/auth/presentation/state/auth_state.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
 
+@RoutePage()
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -22,31 +23,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
-      // Handle error state
       if (next.status == AuthStatus.error && !_hasShownError) {
         _hasShownError = true;
-
-        // Show error toast
         WidgetsBinding.instance.addPostFrameCallback((_) {
           CustomSnackbar.showError(
             context: context,
             title: 'Login Failed',
             message: next.errorMessage ?? 'Invalid credentials',
           );
-
-          // Clear error state after showing toast
           ref.read(authProvider.notifier).clearError();
         });
       }
 
-      // Reset error flag when leaving error state
       if (previous?.status == AuthStatus.error && next.status != AuthStatus.error) {
         _hasShownError = false;
       }
 
-      // Handle successful authentication
       if (next.status == AuthStatus.authenticated) {
-        context.go(RouteNames.dashboard);
+        context.router.replace(const DashboardRoute());
       }
     });
 
@@ -84,7 +78,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   children: [
                     const Text("Don't have an account? "),
                     GestureDetector(
-                      onTap: () => context.push(RouteNames.signup),
+                      onTap: () => context.router.push(const SignupRoute()),
                       child: const Text(
                         "Sign Up",
                         style: TextStyle(

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
@@ -6,15 +7,13 @@ import 'package:fogshield_dealer_connect/features/profile/presentation/widgets/f
 import 'package:fogshield_dealer_connect/features/profile/presentation/widgets/contact_option_card.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
 
+@RoutePage()
 class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({super.key});
 
-  /// Helper function to launch URLs safely with better error handling
   Future<void> _launchURL(BuildContext context, String urlString, String errorMessage) async {
     try {
       final Uri url = Uri.parse(urlString);
-
-      // Check if the URL can be launched
       final bool canLaunch = await canLaunchUrl(url);
 
       if (canLaunch) {
@@ -74,8 +73,6 @@ class HelpSupportPage extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Call Support
             ContactOptionCard(
               title: 'Call Support',
               subtitle: '+91-129-4270000',
@@ -88,8 +85,6 @@ class HelpSupportPage extends StatelessWidget {
                 );
               },
             ),
-
-            // Email Support
             ContactOptionCard(
               title: 'Email Us',
               subtitle: 'support@securicoelectronics.com',
@@ -102,14 +97,12 @@ class HelpSupportPage extends StatelessWidget {
                 );
               },
             ),
-
-            // WhatsApp Support
             ContactOptionCard(
               title: 'WhatsApp Chat',
               subtitle: '+91 8178-370-666',
               icon: Icons.chat_rounded,
               gradientColors: const [
-                Color(0xFF22C55E), // WhatsApp Green
+                Color(0xFF22C55E),
                 Color(0xFF16A34A),
               ],
               onTap: () async {
@@ -120,7 +113,6 @@ class HelpSupportPage extends StatelessWidget {
                 );
               },
             ),
-
             const SizedBox(height: 32),
             const Padding(
               padding: EdgeInsets.only(left: 4, bottom: 16),
@@ -134,7 +126,6 @@ class HelpSupportPage extends StatelessWidget {
                 ),
               ),
             ),
-
             const FAQItem(
               question: 'How to create a new quotation?',
               answer: 'Go to the Dashboard and tap "New Quotation". Follow the 4-step process to enter customer details, select Fogshield units, review the cart, and generate your PDF.',
@@ -147,7 +138,6 @@ class HelpSupportPage extends StatelessWidget {
               question: 'Can I track if a customer opened a quote?',
               answer: 'Yes! In the "Activity Logs" (Quotation History) section, you can see the real-time status of each quotation, including "Sent" and "Viewed by Customer".',
             ),
-
             const SizedBox(height: 40),
             Center(
               child: Column(

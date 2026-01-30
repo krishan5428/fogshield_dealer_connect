@@ -1,8 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 
 class QuotationSuccessDialog extends StatelessWidget {
   final String quotationId;
@@ -14,12 +14,11 @@ class QuotationSuccessDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // REQUIREMENT: PopScope ensures any back interaction sends the user to the Dashboard
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        context.go(RouteNames.dashboard);
+        context.router.replaceAll([const DashboardRoute()]);
       },
       child: Dialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -46,7 +45,7 @@ class QuotationSuccessDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.redBg.withOpacity(0.1),
+                    color: AppColors.colorCompanyPrimary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -74,17 +73,17 @@ class QuotationSuccessDialog extends StatelessWidget {
                   text: 'PREVIEW DOCUMENT',
                   icon: Icons.picture_as_pdf_rounded,
                   onPressed: () {
-                    // REQUIREMENT: Close dialog and ensure back-navigation from PDF goes to Dashboard
-                    Navigator.pop(context); // Close dialog
-                    context.go(RouteNames.dashboard); // Reset underlying stack to dashboard
-                    context.push(RouteNames.quotationPdfViewer, extra: quotationId); // Push PDF on top
+                    // Close dialog and reset stack to dashboard, then push PDF viewer
+                    context.router.back();
+                    context.router.replaceAll([const DashboardRoute()]);
+                    context.router.push(QuotationPdfViewerRoute(quotationId: quotationId));
                   },
                 ),
                 const SizedBox(height: 12),
                 CustomButton(
                   text: 'BACK TO DASHBOARD',
                   isOutlined: true,
-                  onPressed: () => context.go(RouteNames.dashboard),
+                  onPressed: () => context.router.replaceAll([const DashboardRoute()]),
                 ),
               ],
             ),

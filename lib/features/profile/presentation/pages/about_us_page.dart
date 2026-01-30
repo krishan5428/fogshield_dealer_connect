@@ -1,8 +1,10 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sign_in_button/sign_in_button.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 
+@RoutePage()
 class AboutUsPage extends StatelessWidget {
   const AboutUsPage({super.key});
 
@@ -41,7 +43,6 @@ class AboutUsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            // Condensed Text Section
             const Text(
               'FogSHIELD is Securico’s next-gen IoT fogging ecosystem, engineered in India to stop intrusions instantly by eliminating visibility in seconds. Combining 40 years of security expertise with world-class UR Fog fluid, it provides ultimate physical deterrence with seamless app control.',
               textAlign: TextAlign.center,
@@ -59,32 +60,25 @@ class AboutUsPage extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 16),
-            // Corrected Mini Social Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SignInButton(
-                  Buttons.facebook, // Changed from facebookNew to support mini mode
+                  Buttons.facebook,
                   mini: true,
-                  onPressed: () {
-                    // TODO: Link to Facebook page
-                  },
+                  onPressed: () {},
                 ),
                 const SizedBox(width: 12),
                 SignInButton(
                   Buttons.linkedIn,
                   mini: true,
-                  onPressed: () {
-                    // TODO: Link to LinkedIn profile
-                  },
+                  onPressed: () {},
                 ),
                 const SizedBox(width: 12),
                 SignInButton(
                   Buttons.twitter,
                   mini: true,
-                  onPressed: () {
-                    // TODO: Link to Twitter/X profile
-                  },
+                  onPressed: () {},
                 ),
               ],
             ),

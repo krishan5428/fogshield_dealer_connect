@@ -1,5 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
@@ -7,22 +9,15 @@ import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets
 import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/share_options_sheet.dart';
 import 'package:fogshield_dealer_connect/core/providers/app_database_provider.dart';
 import 'package:fogshield_dealer_connect/core/database/app_database.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 
-/// Provider to fetch a specific quotation and its items by ID from the database
 final quotationDetailProvider = FutureProvider.family<({Quotation quote, List<QuotationItem> items}), String>((ref, id) async {
   final db = ref.watch(databaseProvider);
-
-  // Fetch the main quotation record from the DB
   final quote = await (db.select(db.quotations)..where((t) => t.id.equals(id))).getSingle();
-
-  // Fetch all line items for this specific quotation from the DB
   final items = await db.getItemsForQuotation(id);
-
   return (quote: quote, items: items);
 });
 
+@RoutePage()
 class QuotationDetailPage extends ConsumerWidget {
   final String quotationId;
 
@@ -33,7 +28,6 @@ class QuotationDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Watch the database-driven provider
     final detailAsync = ref.watch(quotationDetailProvider(quotationId));
 
     return Scaffold(
@@ -44,7 +38,6 @@ class QuotationDetailPage extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.share_rounded),
             onPressed: () {
-              // Share button logic - shows the same share options sheet
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
@@ -94,13 +87,10 @@ class QuotationDetailPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
-
-          // These widgets now display data fetched from the DB
           QuotationSummary(
             quotation: quote,
             items: items,
           ),
-
           const SizedBox(height: 40),
         ],
       ),
@@ -124,8 +114,7 @@ class QuotationDetailPage extends ConsumerWidget {
               text: 'VIEW PDF',
               icon: Icons.picture_as_pdf_rounded,
               onPressed: () {
-                // Navigate to PDF viewer page with the current quotationId passed as extra
-                context.push(RouteNames.quotationPdfViewer, extra: quotationId);
+                context.router.push(QuotationPdfViewerRoute(quotationId: quotationId));
               },
             ),
           ),

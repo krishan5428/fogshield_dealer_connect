@@ -1,19 +1,19 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_app_bar.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
 import 'package:fogshield_dealer_connect/features/profile/presentation/providers/profile_providers.dart';
 import 'package:fogshield_dealer_connect/features/profile/presentation/widgets/profile_header.dart';
 import 'package:fogshield_dealer_connect/features/profile/presentation/widgets/profile_info_card.dart';
-import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 
+@RoutePage()
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-// Watch the profile provider for real-time updates
     final profile = ref.watch(profileProvider);
 
     return Scaffold(
@@ -56,7 +56,6 @@ class ProfilePage extends ConsumerWidget {
                     label: 'Company Name',
                     value: profile.companyName,
                   ),
-                  // Updated GST Number to use value from profile state
                   ProfileInfoCard(
                     icon: Icons.receipt_long_outlined,
                     label: 'GST Number',
@@ -70,7 +69,7 @@ class ProfilePage extends ConsumerWidget {
                   const SizedBox(height: 40),
                   CustomButton(
                     text: 'EDIT PROFILE',
-                    onPressed: () => context.push(RouteNames.editProfile),
+                    onPressed: () => context.router.push(const EditProfileRoute()),
                     icon: Icons.edit_outlined,
                   ),
                   const SizedBox(height: 12),
@@ -90,7 +89,5 @@ class ProfilePage extends ConsumerWidget {
         ),
       ),
     );
-
-
   }
 }

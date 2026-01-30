@@ -1,7 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
-import 'package:go_router/go_router.dart';
 
 class EmptyCartView extends StatelessWidget {
   const EmptyCartView({super.key});
@@ -30,7 +30,7 @@ class EmptyCartView extends StatelessWidget {
             CustomButton(
               text: 'BROWSE PRODUCTS',
               isFullWidth: false,
-              onPressed: () => context.pop(),
+              onPressed: () => context.router.back(),
             ),
           ],
         ),
