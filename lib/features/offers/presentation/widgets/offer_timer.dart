@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 
 class OfferTimer extends StatelessWidget {
   final DateTime expiryDate;

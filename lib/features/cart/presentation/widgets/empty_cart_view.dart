@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_button.dart';
 import 'package:go_router/go_router.dart';
-import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 
 class EmptyCartView extends StatelessWidget {
   const EmptyCartView({super.key});

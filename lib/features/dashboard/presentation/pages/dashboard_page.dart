@@ -3,7 +3,6 @@ import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/sidebar_drawer.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/notification_icon.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/greeting_section.dart';
-import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/stats_overview.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/quick_action_buttons.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/widgets/recent_activity.dart';
 

@@ -6,9 +6,8 @@ import 'package:fogshield_dealer_connect/app/routes/route_names.dart';
 import 'package:fogshield_dealer_connect/core/animations/page_transitions.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/providers/auth_providers.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/state/auth_state.dart';
-import 'package:fogshield_dealer_connect/features/profile/presentation/providers/profile_providers.dart';
 
-// Pages
+// Pages imports...
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/login_page.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/pages/signup_page.dart';
 import 'package:fogshield_dealer_connect/features/dashboard/presentation/pages/dashboard_page.dart';
@@ -34,49 +33,58 @@ import 'package:fogshield_dealer_connect/features/notifications/presentation/pag
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/product_catalog_page.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/pages/video_player_page.dart';
 
-// Models
+// Models imports...
 import 'package:fogshield_dealer_connect/features/offers/presentation/state/offer_state.dart';
 import 'package:fogshield_dealer_connect/features/products/presentation/widgets/product_model.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-  final profileState = ref.watch(profileProvider);
+  // IMPORTANT: Do NOT watch the provider here. Watching it causes the GoRouter
+  // to be re-instantiated (rebuilt) every time the state changes (e.g., loading),
+  // which resets the app to the initial route ('/').
+  final listenable = AuthRefreshListenable(ref);
 
   return GoRouter(
     initialLocation: '/',
-    refreshListenable: AuthRefreshListenable(ref),
+    refreshListenable: listenable,
     debugLogDiagnostics: true,
-
     redirect: (context, state) {
+      // READ the current state here inside the redirect function
+      final authState = ref.read(authProvider);
       final status = authState.status;
+
       final isAtSplash = state.matchedLocation == '/';
-      final isLoggingIn = state.matchedLocation == RouteNames.login;
-      final isSigningUp = state.matchedLocation == RouteNames.signup;
+      final isAtLogin = state.matchedLocation == RouteNames.login;
+      final isAtSignup = state.matchedLocation == RouteNames.signup;
 
-      if (isAtSplash) return null;
-
-      if (status == AuthStatus.initial || status == AuthStatus.loading) {
+      // Always allow splash screen to show initially
+      if (status == AuthStatus.initial) {
         return null;
       }
 
-      if (status == AuthStatus.unauthenticated) {
-        if (isLoggingIn || isSigningUp) return null;
-        return RouteNames.login;
-      }
-
+      // If we are authenticated
       if (status == AuthStatus.authenticated) {
-        if (profileState.name == 'Loading...') {
-          return null;
-        }
-
-        if (isLoggingIn || isSigningUp) {
+        // If user is at splash, login, or signup, send to dashboard
+        if (isAtSplash || isAtLogin || isAtSignup) {
           return RouteNames.dashboard;
         }
       }
 
+      // If we are unauthenticated (logged out)
+      if (status == AuthStatus.unauthenticated || status == AuthStatus.signedUp) {
+        // Allow access to login and signup pages
+        if (!isAtLogin && !isAtSignup) {
+          // Redirect everything else to login
+          return RouteNames.login;
+        }
+      }
+
+      // If loading, stay where we are (prevents flicker)
+      if (status == AuthStatus.loading) {
+        return null;
+      }
+
       return null;
     },
-
     routes: [
       GoRoute(
         path: '/',
@@ -203,7 +211,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-      // THE FIX: Correctly extracts extra string for the PDF viewer
       GoRoute(
         path: RouteNames.quotationPdfViewer,
         name: 'quotation-pdf-viewer',
@@ -231,7 +238,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) {
           Product product;
           bool showQuotationActions = false;
-
           if (state.extra is Map<String, dynamic>) {
             final map = state.extra as Map<String, dynamic>;
             product = map['product'] as Product;
@@ -239,14 +245,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           } else {
             product = state.extra as Product;
           }
-
           return PageTransitions.slideTransition(
             context: context,
             state: state,
-            child: ProductDetailPage(
-              product: product,
-              showQuotationActions: showQuotationActions,
-            ),
+            child: ProductDetailPage(product: product, showQuotationActions: showQuotationActions),
           );
         },
       ),
@@ -341,6 +343,5 @@ final routerProvider = Provider<GoRouter>((ref) {
 class AuthRefreshListenable extends ChangeNotifier {
   AuthRefreshListenable(Ref ref) {
     ref.listen(authProvider, (_, __) => notifyListeners());
-    ref.listen(profileProvider, (_, __) => notifyListeners());
   }
 }

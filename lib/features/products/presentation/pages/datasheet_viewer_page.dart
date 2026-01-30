@@ -95,18 +95,6 @@ class _DatasheetViewerPageState extends State<DatasheetViewerPage> {
     }
   }
 
-  void _zoomIn() {
-    if (pdfController != null) {
-      pdfController!.setPage(currentPage);
-    }
-  }
-
-  void _zoomOut() {
-    if (pdfController != null) {
-      pdfController!.setPage(currentPage);
-    }
-  }
-
   void _resetZoom() {
     if (pdfController != null) {
       pdfController!.setPage(currentPage);

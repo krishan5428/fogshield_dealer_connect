@@ -55,10 +55,10 @@ class DrawerMenuItem extends StatelessWidget {
                 ),
               ),
               if (!isSelected)
-                Icon(
+                const Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
-                  color: const Color(0xFF9E9E9E),
+                  color: Color(0xFF9E9E9E),
                 ),
             ],
           ),

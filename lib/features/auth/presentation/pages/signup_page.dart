@@ -9,20 +9,58 @@ import 'package:fogshield_dealer_connect/features/auth/presentation/providers/au
 import 'package:fogshield_dealer_connect/features/auth/presentation/state/auth_state.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
 
-class SignupPage extends ConsumerWidget {
+class SignupPage extends ConsumerStatefulWidget {
   const SignupPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends ConsumerState<SignupPage> {
+  @override
+  Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
+      // Handle error state - stay on signup page and show error
       if (next.status == AuthStatus.error) {
-        CustomSnackbar.showError(
-          context: context,
-          title: 'Registration Failed',
-          message: next.errorMessage,
-        );
-      } else if (next.status == AuthStatus.authenticated) {
-        context.go(RouteNames.dashboard);
+        // Only show toast if error message changed or status just became error
+        if (previous?.status != AuthStatus.error || previous?.errorMessage != next.errorMessage) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            CustomSnackbar.showError(
+              context: context,
+              title: 'Registration Failed',
+              message: next.errorMessage ?? 'An error occurred',
+            );
+
+            // Clear error state so user can try again
+            ref.read(authProvider.notifier).clearError();
+          });
+        }
+      }
+
+      // Handle successful signup - show success and navigate to login
+      if (next.status == AuthStatus.signedUp) {
+        // Only navigate once
+        if (previous?.status != AuthStatus.signedUp) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            // Show success toast
+            CustomSnackbar.showSuccess(
+              context: context,
+              title: 'Success!',
+              message: 'Account created successfully. Please login.',
+            );
+
+            // Wait a moment for toast to show, then navigate
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                // Clear signedUp state
+                ref.read(authProvider.notifier).clearSignedUp();
+
+                // Navigate to login using go (not pushReplacement)
+                context.go(RouteNames.login);
+              }
+            });
+          });
+        }
       }
     });
 

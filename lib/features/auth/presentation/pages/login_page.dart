@@ -9,37 +9,46 @@ import 'package:fogshield_dealer_connect/features/auth/presentation/providers/au
 import 'package:fogshield_dealer_connect/features/auth/presentation/state/auth_state.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_snackbar.dart';
 
-class LoginPage extends ConsumerWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-// Listens for authentication status changes
+  ConsumerState<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends ConsumerState<LoginPage> {
+  bool _hasShownError = false;
+
+  @override
+  Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
-      if (next.status == AuthStatus.error) {
-        CustomSnackbar.showError(
-          context: context,
-          title: 'Login Failed',
-          message: next.errorMessage,
-        );
-      } else if (next.status == AuthStatus.authenticated) {
-// Navigate to dashboard if login is successful or session found
+      // Handle error state
+      if (next.status == AuthStatus.error && !_hasShownError) {
+        _hasShownError = true;
+
+        // Show error toast
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          CustomSnackbar.showError(
+            context: context,
+            title: 'Login Failed',
+            message: next.errorMessage ?? 'Invalid credentials',
+          );
+
+          // Clear error state after showing toast
+          ref.read(authProvider.notifier).clearError();
+        });
+      }
+
+      // Reset error flag when leaving error state
+      if (previous?.status == AuthStatus.error && next.status != AuthStatus.error) {
+        _hasShownError = false;
+      }
+
+      // Handle successful authentication
+      if (next.status == AuthStatus.authenticated) {
         context.go(RouteNames.dashboard);
       }
     });
-
-    final authState = ref.watch(authProvider);
-
-// Show a loading indicator while checking secure storage on app launch
-    if (authState.status == AuthStatus.initial) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(
-            color: AppColors.colorCompanyPrimary,
-          ),
-        ),
-      );
-    }
 
     return Scaffold(
       body: SafeArea(
@@ -92,7 +101,5 @@ class LoginPage extends ConsumerWidget {
         ),
       ),
     );
-
-
   }
 }

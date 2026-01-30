@@ -47,10 +47,10 @@ class QuotationListItem extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     backgroundColor: AppColors.lightGrey,
                     radius: 18,
-                    child: const Icon(Icons.person_outline, size: 18, color: AppColors.colorAccent),
+                    child: Icon(Icons.person_outline, size: 18, color: AppColors.colorAccent),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

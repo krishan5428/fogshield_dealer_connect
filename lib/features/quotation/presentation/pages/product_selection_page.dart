@@ -23,15 +23,20 @@ class ProductSelectionPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: const CustomAppBar(title: 'Select Fogshield Products'),
-      body: const Column(
+      body: Column(
         children: [
-          StepperIndicator(currentStep: 2),
+          const StepperIndicator(currentStep: 2),
           Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: ProductSearchBar(),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: ProductSearchBar(
+              onChanged: (value) {
+                // Update the search provider defined in product_grid.dart
+                ref.read(productSelectionSearchProvider.notifier).state = value;
+              },
+            ),
           ),
-          CategoryChips(),
-          Expanded(
+          const CategoryChips(),
+          const Expanded(
             child: ProductGrid(),
           ),
         ],
