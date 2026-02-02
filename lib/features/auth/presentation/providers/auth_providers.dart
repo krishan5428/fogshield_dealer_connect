@@ -23,10 +23,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   };
 
   AuthNotifier(this._ref) : super(AuthState.initial()) {
-    _checkAuthStatus();
+    // Call the public method on initialization
+    checkAuthStatus();
   }
 
-  Future<void> _checkAuthStatus() async {
+  // Changed from _checkAuthStatus to checkAuthStatus (made public)
+  Future<void> checkAuthStatus() async {
     final loggedIn = await SecureStorageService.isLoggedIn();
     if (loggedIn) {
       final identifier = await SecureStorageService.getStoredPhone();
@@ -67,6 +69,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String email,
     required String password,
     required String dealerCode,
+    required String gstNumber,
+    required String address,
   }) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
 
@@ -113,6 +117,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       phone: phone,
       companyName: 'Authorized Fogshield Partner',
       dealerId: dealerCode.toUpperCase(),
+      gstNumber: gstNumber,
+      address: address,
     );
 
     // Set status to signedUp to redirect to login

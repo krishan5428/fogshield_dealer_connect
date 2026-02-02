@@ -14,26 +14,14 @@ class HelpSupportPage extends StatelessWidget {
   Future<void> _launchURL(BuildContext context, String urlString, String errorMessage) async {
     try {
       final Uri url = Uri.parse(urlString);
-      final bool canLaunch = await canLaunchUrl(url);
 
-      if (canLaunch) {
-        final bool launched = await launchUrl(
-          url,
-          mode: LaunchMode.externalApplication,
-        );
-
-        if (!launched && context.mounted) {
-          CustomSnackbar.showError(
-            context: context,
-            title: 'Launch Failed',
-            message: errorMessage,
-          );
-        }
-      } else {
+      // Attempt to launch directly with external application mode
+      // This is often more reliable for tel:, mailto: schemas
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
         if (context.mounted) {
           CustomSnackbar.showError(
             context: context,
-            title: 'Not Available',
+            title: 'Launch Failed',
             message: errorMessage,
           );
         }
@@ -44,7 +32,7 @@ class HelpSupportPage extends StatelessWidget {
         CustomSnackbar.showError(
           context: context,
           title: 'Error',
-          message: 'Failed to open: ${e.toString()}',
+          message: 'Failed to open: $errorMessage',
         );
       }
     }
@@ -106,6 +94,7 @@ class HelpSupportPage extends StatelessWidget {
                 Color(0xFF16A34A),
               ],
               onTap: () async {
+                // Using standard wa.me link which works universally if WhatsApp is installed
                 await _launchURL(
                   context,
                   'https://wa.me/918178370666',

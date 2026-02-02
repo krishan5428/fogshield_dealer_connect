@@ -73,6 +73,14 @@ class CustomerDetailsSection extends StatelessWidget {
           shippingAddr,
           'Shipping Address',
         ),
+        if (quotation.notes != null && quotation.notes!.isNotEmpty) ...[
+          const Divider(height: 24, thickness: 0.5),
+          _buildInfoRow(
+            Icons.note_alt_outlined,
+            quotation.notes!,
+            'Special Instructions',
+          ),
+        ],
       ],
     );
   }

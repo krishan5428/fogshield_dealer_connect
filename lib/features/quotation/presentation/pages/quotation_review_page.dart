@@ -51,6 +51,7 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
       discountPercentage: 0.0,
       status: tables.QuotationStatus.draft,
       syncStatus: tables.SyncStatus.localOnly,
+      notes: formState.notes,
       createdAt: DateTime.now(),
     );
 
@@ -98,6 +99,7 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
         discountPercentage: 0.0,
         status: tables.QuotationStatus.sent,
         syncStatus: tables.SyncStatus.localOnly,
+        notes: formState.notes,
         createdAt: DateTime.now(),
       );
 

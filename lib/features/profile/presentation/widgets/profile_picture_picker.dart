@@ -1,14 +1,40 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
 import 'package:fogshield_dealer_connect/features/profile/presentation/providers/profile_providers.dart';
 
 class ProfilePicturePicker extends ConsumerWidget {
   const ProfilePicturePicker({super.key});
 
+  Future<void> _pickImage(WidgetRef ref) async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        // Update the provider with the new file path
+        ref.read(profileProvider.notifier).updateImage(image.path);
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider);
+
+    ImageProvider? getImageProvider() {
+      if (profile.profileImage != null) {
+        if (profile.profileImage!.startsWith('assets/')) {
+          return AssetImage(profile.profileImage!);
+        } else {
+          return FileImage(File(profile.profileImage!));
+        }
+      }
+      return null;
+    }
 
     return Center(
       child: Stack(
@@ -22,10 +48,7 @@ class ProfilePicturePicker extends ConsumerWidget {
             child: CircleAvatar(
               radius: 60,
               backgroundColor: AppColors.lightGrey,
-              // BoxFit.cover is used internally by backgroundImage to ensure it fits correctly
-              backgroundImage: profile.profileImage != null
-                  ? AssetImage(profile.profileImage!)
-                  : null,
+              backgroundImage: getImageProvider(),
               child: profile.profileImage == null
                   ? const Icon(Icons.person, size: 70, color: AppColors.colorAccent)
                   : null,
@@ -35,11 +58,7 @@ class ProfilePicturePicker extends ConsumerWidget {
             bottom: 4,
             right: 4,
             child: GestureDetector(
-              onTap: () {
-                // In a real device, you'd use image_picker.
-                // For this demo, we mock selecting an asset image.
-                ref.read(profileProvider.notifier).updateImage('assets/icons/app_icon.png');
-              },
+              onTap: () => _pickImage(ref),
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: const BoxDecoration(

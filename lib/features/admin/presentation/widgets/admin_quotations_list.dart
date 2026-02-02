@@ -1,0 +1,97 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/app/routes/app_router.gr.dart';
+import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
+import 'package:fogshield_dealer_connect/core/providers/app_database_provider.dart';
+import 'package:fogshield_dealer_connect/features/quotation/presentation/widgets/quotation_list_item.dart';
+
+class AdminQuotationsList extends ConsumerWidget {
+  const AdminQuotationsList({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the database stream for all quotations
+    // Note: In a real admin app, you might want a specific 'adminAllQuotationsProvider'
+    // that fetches from a central server rather than local DB.
+    // For now, using the local history as a placeholder.
+    final historyAsync = ref.watch(quotationHistoryStreamProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'ALL QUOTATIONS MADE',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.colorAccent,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              TextButton(
+                onPressed: () => context.router.push(const QuotationHistoryRoute()),
+                style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                child: const Text(
+                  'VIEW ALL',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: historyAsync.when(
+            data: (quotations) {
+              if (quotations.isEmpty) {
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(32.0),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.grey.withOpacity(0.1)),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'No quotations found in system.',
+                      style: TextStyle(color: AppColors.disabledGrey, fontSize: 13),
+                    ),
+                  ),
+                );
+              }
+
+              // Show more items for admin view
+              final recentQuotes = quotations.take(10).toList();
+
+              return ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: recentQuotes.length,
+                itemBuilder: (context, index) {
+                  return QuotationListItem(quotation: recentQuotes[index]);
+                },
+              );
+            },
+            loading: () => const Padding(
+              padding: EdgeInsets.all(32.0),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            ),
+            error: (err, stack) => Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('Error loading data: $err', style: const TextStyle(fontSize: 11)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

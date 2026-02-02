@@ -162,6 +162,17 @@ class PdfService {
           ),
 
           pw.SizedBox(height: 40),
+          if (quote.notes != null && quote.notes!.isNotEmpty) ...[
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Special Instructions:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                pw.SizedBox(height: 4),
+                pw.Text(quote.notes!, style: const pw.TextStyle(fontSize: 9)),
+                pw.SizedBox(height: 20),
+              ],
+            ),
+          ],
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [

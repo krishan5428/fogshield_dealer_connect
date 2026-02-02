@@ -18,132 +18,142 @@ class AppRouter extends RootStackRouter {
     CustomRoute(
       page: SplashRoute.page,
       initial: true,
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.fadeIn,
+      duration: const Duration(milliseconds: 300),
     ),
 
     // 2. Auth Routes
     CustomRoute(
       page: LoginRoute.page,
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      // Changed to fadeIn for a smoother transition from Splash
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 500),
     ),
     CustomRoute(
       page: SignupRoute.page,
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
 
     // 3. Protected Routes (Wrapped in AuthGuard)
     CustomRoute(
       page: DashboardRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      // Changed to fadeIn for a smoother transition from Splash/Login
+      transitionsBuilder: TransitionsBuilders.fadeIn,
+      duration: const Duration(milliseconds: 500),
+    ),
+
+    // 4. Admin Routes
+    CustomRoute(
+      page: AdminDashboardRoute.page,
+      guards: [AuthGuard(ref)], // Protected by AuthGuard
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
 
     // Product & Catalog Flow
     CustomRoute(
       page: ProductCatalogRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: ProductDetailRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
 
     // Quotation Flow
     CustomRoute(
       page: QuotationFormRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: ProductSelectionRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: CartRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: QuotationReviewRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
 
     // History & Resources
     CustomRoute(
       page: QuotationHistoryRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: QuotationDetailRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: QuotationPdfViewerRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: DatasheetsRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
 
     // Profile & Misc
     CustomRoute(
       page: ProfileRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: EditProfileRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: HelpSupportRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: AboutUsRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: NotificationsRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
     CustomRoute(
       page: OffersRoute.page,
       guards: [AuthGuard(ref)],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
-      durationInMilliseconds: 300,
+      transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+      duration: const Duration(milliseconds: 300),
     ),
   ];
 }

@@ -42,6 +42,7 @@ class Quotations extends Table {
   TextColumn get shippingCity => text().withDefault(const Constant(''))();
   TextColumn get shippingState => text().withDefault(const Constant(''))();
   TextColumn get shippingPincode => text().withDefault(const Constant(''))();
+  TextColumn get notes => text().nullable()();
 
   // Financial Summary
   RealColumn get totalAmount => real()();

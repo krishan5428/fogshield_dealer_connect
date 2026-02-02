@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
@@ -8,47 +9,64 @@ class CustomDrawerHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Watch the profile provider to rebuild when state changes
     final profile = ref.watch(profileProvider);
+
+    // Helper to determine image source (Asset vs File)
+    ImageProvider? getImageProvider() {
+      if (profile.profileImage != null) {
+        if (profile.profileImage!.startsWith('assets/')) {
+          return AssetImage(profile.profileImage!);
+        } else {
+          return FileImage(File(profile.profileImage!));
+        }
+      }
+      return null;
+    }
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 60, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
       decoration: const BoxDecoration(
         color: AppColors.colorCompanyPrimary,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 36,
-            backgroundColor: AppColors.white,
-            backgroundImage: profile.profileImage != null
-                ? AssetImage(profile.profileImage!)
-                : null,
-            child: profile.profileImage == null
-                ? const Icon(Icons.person, size: 40, color: AppColors.colorCompanyPrimary)
-                : null,
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: CircleAvatar(
+              radius: 35,
+              backgroundColor: Colors.white,
+              backgroundImage: getImageProvider(),
+              child: profile.profileImage == null
+                  ? const Icon(Icons.person, size: 40, color: AppColors.colorCompanyPrimary)
+                  : null,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
             profile.name,
             style: const TextStyle(
-              color: AppColors.white,
+              color: Colors.white,
               fontSize: 20,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.bold,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
             profile.email,
             style: TextStyle(
-              color: AppColors.white.withOpacity(0.8),
+              color: Colors.white.withOpacity(0.8),
               fontSize: 14,
-              fontWeight: FontWeight.w500,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

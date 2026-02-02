@@ -18,7 +18,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     gstNumber: '',
     profileImage: null,
   )) {
-// Load persisted data on initialization
+    // Load persisted data on initialization
     loadPersistedProfile();
   }
 
@@ -26,7 +26,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   Future<void> loadPersistedProfile() async {
     final data = await SecureStorageService.getProfileData();
 
-// Only update if we actually have saved data
+    // Only update if we actually have saved data
     if (data['name'] != null) {
       state = state.copyWith(
         name: data['name'],
@@ -41,8 +41,6 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       // Fallback to defaults if no storage found
       state = state.copyWith(name: 'New Dealer');
     }
-
-
   }
 
   /// Updates profile in memory AND persists it to Secure Storage
@@ -56,7 +54,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     String? gstNumber,
     String? profileImage,
   }) async {
-// Update memory state
+    // Update memory state
     state = state.copyWith(
       name: name,
       email: email,
@@ -68,7 +66,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       profileImage: profileImage,
     );
 
-// Persist to Secure Storage
+    // Persist to Secure Storage
     await SecureStorageService.saveProfileData(
       name: state.name,
       email: state.email,
@@ -78,11 +76,10 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       gst: state.gstNumber,
       dealerId: state.dealerId,
     );
-
-
   }
 
   void updateImage(String path) {
-    state = state.copyWith(profileImage: path);
+    // Use updateProfile to trigger persistence/state update cleanly
+    updateProfile(profileImage: path);
   }
 }

@@ -21,6 +21,8 @@ class _SignupFormState extends ConsumerState<SignupForm> {
   final _passwordController = TextEditingController();
   // 1. Added Dealer Code Controller
   final _dealerCodeController = TextEditingController();
+  final _gstController = TextEditingController();
+  final _addressController = TextEditingController();
 
   @override
   void dispose() {
@@ -29,6 +31,8 @@ class _SignupFormState extends ConsumerState<SignupForm> {
     _emailController.dispose();
     _passwordController.dispose();
     _dealerCodeController.dispose(); // Dispose the new controller
+    _gstController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -41,6 +45,8 @@ class _SignupFormState extends ConsumerState<SignupForm> {
         password: _passwordController.text,
         // 2. Pass the dealer code to your signup method
         dealerCode: _dealerCodeController.text,
+        gstNumber: _gstController.text,
+        address: _addressController.text,
       );
     }
   }
@@ -82,6 +88,22 @@ class _SignupFormState extends ConsumerState<SignupForm> {
               }
               return null;
             },
+          ),
+          const SizedBox(height: 16),
+          CustomTextField(
+            label: 'GST Number',
+            hint: 'Enter GST Number',
+            controller: _gstController,
+            prefixIcon: Icons.receipt_long_outlined,
+            validator: (v) => Validators.required(v, fieldName: 'GST Number'),
+          ),
+          const SizedBox(height: 16),
+          CustomTextField(
+            label: 'Business Address',
+            hint: 'Enter full business address',
+            controller: _addressController,
+            prefixIcon: Icons.location_on_outlined,
+            validator: (v) => Validators.required(v, fieldName: 'Address'),
           ),
           const SizedBox(height: 16),
           CustomTextField(

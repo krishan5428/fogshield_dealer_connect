@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/theme/app_colors.dart';
@@ -9,6 +10,17 @@ class ProfileHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider);
+
+    ImageProvider? getImageProvider() {
+      if (profile.profileImage != null) {
+        if (profile.profileImage!.startsWith('assets/')) {
+          return AssetImage(profile.profileImage!);
+        } else {
+          return FileImage(File(profile.profileImage!));
+        }
+      }
+      return null;
+    }
 
     return Column(
       children: [
@@ -38,9 +50,7 @@ class ProfileHeader extends ConsumerWidget {
               child: CircleAvatar(
                 radius: 60,
                 backgroundColor: AppColors.lightGrey,
-                backgroundImage: profile.profileImage != null
-                    ? AssetImage(profile.profileImage!)
-                    : null,
+                backgroundImage: getImageProvider(),
                 child: profile.profileImage == null
                     ? const Icon(Icons.person, size: 70, color: AppColors.colorAccent)
                     : null,
@@ -65,7 +75,5 @@ class ProfileHeader extends ConsumerWidget {
         ),
       ],
     );
-
-
   }
 }
