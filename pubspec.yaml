@@ -58,6 +58,7 @@ dependencies:
 
   # HTTP requests for downloading PDFs
   http: ^1.2.1
+  logger: ^2.6.2
 
 dev_dependencies:
   flutter_test:

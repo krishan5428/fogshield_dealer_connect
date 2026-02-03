@@ -1,14 +1,20 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/core/services/data_sync_service.dart';
+import 'package:fogshield_dealer_connect/core/utils/logger_service.dart';
 import 'package:fogshield_dealer_connect/core/utils/storage_service.dart';
 import 'package:fogshield_dealer_connect/features/profile/presentation/state/profile_state.dart';
 
 final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
-  return ProfileNotifier();
+  return ProfileNotifier(ref);
 });
 
 class ProfileNotifier extends StateNotifier<ProfileState> {
-  ProfileNotifier()
+  final Ref _ref;
+
+  ProfileNotifier(this._ref)
       : super(ProfileState(
+    userId: '',
     name: 'Loading...',
     email: '',
     phone: '',
@@ -24,27 +30,42 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 
   /// Loads profile data from Secure Storage
   Future<void> loadPersistedProfile() async {
-    final data = await SecureStorageService.getProfileData();
+    try {
+      final data = await SecureStorageService.getProfileData();
+      LoggerService.d("👤 Loaded Persisted Profile: $data");
 
-    // Only update if we actually have saved data
-    if (data['name'] != null) {
-      state = state.copyWith(
-        name: data['name'],
-        email: data['email'],
-        phone: data['phone'],
-        companyName: data['company'],
-        address: data['address'],
-        gstNumber: data['gst'],
-        dealerId: data['dealerId'],
-      );
-    } else {
-      // Fallback to defaults if no storage found
-      state = state.copyWith(name: 'New Dealer');
+      // Only update if we actually have saved data
+      if (data['name'] != null && data['name']!.isNotEmpty) {
+        state = state.copyWith(
+          userId: data['userId'],
+          name: data['name'],
+          email: data['email'],
+          phone: data['phone'],
+          companyName: data['company'],
+          address: data['address'],
+          gstNumber: data['gst'],
+          dealerId: data['dealerId'],
+        );
+      } else {
+        // Fallback: Only set 'New Dealer' if we are still in the initial 'Loading...' state.
+        // This prevents overwriting valid data if updateProfile() was called (e.g. by Login)
+        // before this async method finished.
+        if (state.name == 'Loading...') {
+          state = state.copyWith(name: 'New Dealer');
+        }
+      }
+    } catch (e) {
+      LoggerService.e("❌ Error loading profile persistence: $e", e);
+      // Fallback on error so UI doesn't stick on 'Loading...'
+      if (state.name == 'Loading...') {
+        state = state.copyWith(name: 'New Dealer');
+      }
     }
   }
 
-  /// Updates profile in memory AND persists it to Secure Storage
+  /// 3. Run on every new entry (Update)
   Future<void> updateProfile({
+    String? userId, // ✅ Added userId parameter
     String? name,
     String? email,
     String? phone,
@@ -54,8 +75,10 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     String? gstNumber,
     String? profileImage,
   }) async {
-    // Update memory state
+    LoggerService.i("🛠️ Updating Profile State with: ${name ?? 'No Name Change'}");
+    // 1. Update memory
     state = state.copyWith(
+      userId: userId, // ✅ Update userId in state
       name: name,
       email: email,
       phone: phone,
@@ -66,8 +89,9 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       profileImage: profileImage,
     );
 
-    // Persist to Secure Storage
+    // 2. Persist to Storage
     await SecureStorageService.saveProfileData(
+      userId: state.userId, // Uses the updated userId from state
       name: state.name,
       email: state.email,
       phone: state.phone,
@@ -76,10 +100,15 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       gst: state.gstNumber,
       dealerId: state.dealerId,
     );
+
+    // 3. Mark as Dirty (Unsynced)
+    await SecureStorageService.setProfileDirty(true);
+
+    // 4. Attempt Sync immediately
+    _ref.read(syncServiceProvider).syncUserProfile(state);
   }
 
   void updateImage(String path) {
-    // Use updateProfile to trigger persistence/state update cleanly
     updateProfile(profileImage: path);
   }
 }

@@ -1,8 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fogshield_dealer_connect/core/utils/logger_service.dart';
 import 'package:fogshield_dealer_connect/core/utils/storage_service.dart';
+import 'package:fogshield_dealer_connect/features/auth/data/auth_repository.dart';
 import 'package:fogshield_dealer_connect/features/auth/presentation/state/auth_state.dart';
 import 'package:fogshield_dealer_connect/features/profile/presentation/providers/profile_providers.dart';
 
+// 1. Provider for the Repository
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepository();
+});
+
+// 2. The main Auth StateNotifierProvider
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(ref);
 });
@@ -10,25 +18,16 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
 class AuthNotifier extends StateNotifier<AuthState> {
   final Ref _ref;
 
-  final List<String> _validDealerCodes = [
-    'SECDLR001',
-    'SECDLR002',
-    'SECDLR003',
-    'SECDLR004',
-    'SECDLR005',
-  ];
-
-  final Map<String, String> _userRegistry = {
-    "7562095494": "123456",
-  };
+  // Access the repository using the ref
+  AuthRepository get _repository => _ref.read(authRepositoryProvider);
 
   AuthNotifier(this._ref) : super(AuthState.initial()) {
-    // Call the public method on initialization
     checkAuthStatus();
   }
 
-  // Changed from _checkAuthStatus to checkAuthStatus (made public)
+  /// Checks if the user is already logged in (persisted session)
   Future<void> checkAuthStatus() async {
+    LoggerService.i("🔒 Checking Auth Status...");
     final loggedIn = await SecureStorageService.isLoggedIn();
     if (loggedIn) {
       final identifier = await SecureStorageService.getStoredPhone();
@@ -41,28 +40,82 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Handles Login logic
   Future<void> login(String identifier, String password) async {
+    LoggerService.i("🔑 Login Attempt: $identifier");
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
-    await Future.delayed(const Duration(seconds: 2));
 
-    bool isRegisteredUser = _userRegistry.containsKey(identifier) && _userRegistry[identifier] == password;
-    bool isValidDealerCode = _validDealerCodes.contains(identifier.toUpperCase()) && password == "123456";
-
-    if (isRegisteredUser || isValidDealerCode) {
-      await SecureStorageService.saveLoginSession(identifier);
-      state = state.copyWith(
-        status: AuthStatus.authenticated,
-        phoneNumber: identifier,
-        errorMessage: null,
+    try {
+      // Call the API via Repository
+      final response = await _repository.login(
+        mobile: identifier,
+        password: password,
+        deviceId: "device_id_placeholder",
       );
-    } else {
+
+      final bool isSuccess = (response['success'] == true) || (response['status'] == true);
+
+      if (isSuccess) {
+        // Handle User Data extraction (supports 'user' or 'data' key)
+        final userData = response['user'] ?? response['data'];
+        LoggerService.i("✅ Login Success for User: ${userData['name']}");
+
+        // --- NEW: Extract Profile Data including ID ---
+        final userId = userData['id']?.toString() ?? ''; // ✅ Extracting ID
+        final name = userData['name']?.toString() ?? 'Partner';
+        final email = userData['email']?.toString() ?? '';
+        final phone = userData['mobile_number']?.toString() ?? identifier;
+        final companyName = userData['company_name']?.toString() ?? '';
+        final dealerCode = userData['dealer_code']?.toString() ?? '';
+        final gstNumber = userData['gst_number']?.toString() ?? '';
+        final address = userData['address']?.toString() ?? '';
+
+        // 1. Update Profile Provider
+        // We use updateProfile directly. It handles:
+        // - Updating State
+        // - Persisting to Secure Storage
+        // - Triggering Background Sync (if needed)
+        await _ref.read(profileProvider.notifier).updateProfile(
+          userId: userId, // ✅ Passing the userId here
+          name: name,
+          email: email,
+          phone: phone,
+          companyName: companyName,
+          dealerId: dealerCode,
+          gstNumber: gstNumber,
+          address: address,
+        );
+
+        // 2. Save session flag
+        await SecureStorageService.saveLoginSession(identifier);
+
+        // Update State
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          phoneNumber: identifier,
+          errorMessage: null,
+        );
+      } else {
+        // Handle API Failure Message
+        final errorMsg = response['message'] ?? response['msg'] ?? "Invalid credentials.";
+        LoggerService.w("⚠️ Login Failed: $errorMsg");
+
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: errorMsg,
+        );
+      }
+    } catch (e) {
+      LoggerService.e("❌ Login Error: $e", e);
+      // Handle Network/Server Errors
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: "Invalid credentials.",
+        errorMessage: "Connection failed. Please check your internet.",
       );
     }
   }
 
+  /// Handles Signup logic
   Future<void> signup({
     required String name,
     required String phone,
@@ -72,70 +125,66 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String gstNumber,
     required String address,
   }) async {
+    LoggerService.i("📝 Signup Attempt: $name ($phone)");
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
 
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final response = await _repository.signup(
+        name: name,
+        mobile: phone,
+        email: email,
+        password: password,
+        dealerCode: dealerCode,
+        gstNumber: gstNumber,
+        address: address,
+      );
 
-    // 1. Validate Dealer Code
-    if (!_validDealerCodes.contains(dealerCode.toUpperCase())) {
+      // Check for success (handling both possible keys)
+      final bool isSuccess = (response['success'] == true) || (response['status'] == true);
+
+      if (isSuccess) {
+        // Pre-fill the profile provider so the user doesn't see empty screens
+        // Note: userId might be empty here until they actually login and get it from DB
+        await _ref.read(profileProvider.notifier).updateProfile(
+          name: name,
+          email: email,
+          phone: phone,
+          companyName: 'Authorized Fogshield Partner',
+          dealerId: dealerCode.toUpperCase(),
+          gstNumber: gstNumber,
+          address: address,
+        );
+
+        LoggerService.i("✅ Signup Success: $name");
+
+        state = state.copyWith(
+          status: AuthStatus.signedUp,
+          errorMessage: null,
+        );
+      } else {
+        final errorMsg = response['message'] ?? response['msg'] ?? "Registration failed.";
+        LoggerService.w("⚠️ Signup Failed: $errorMsg");
+
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: errorMsg,
+        );
+      }
+    } catch (e) {
+      LoggerService.e("❌ Signup Error: $e", e);
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: "Invalid Dealer Code.",
+        errorMessage: "Connection failed. Please try again later.",
       );
-      return;
     }
-
-    // 2. Validate Mobile Number (Simple check for 10 digits)
-    if (phone.length != 10 || !RegExp(r'^[0-9]+$').hasMatch(phone)) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: "Please enter a valid 10-digit mobile number.",
-      );
-      return;
-    }
-
-    // 3. Validate Email
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(email)) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: "Please enter a valid email address.",
-      );
-      return;
-    }
-
-    // If all validations pass, proceed with registration
-
-    // Register user in memory
-    _userRegistry[phone] = password;
-
-    // Update profile provider
-    _ref.read(profileProvider.notifier).updateProfile(
-      name: name,
-      email: email,
-      phone: phone,
-      companyName: 'Authorized Fogshield Partner',
-      dealerId: dealerCode.toUpperCase(),
-      gstNumber: gstNumber,
-      address: address,
-    );
-
-    // Set status to signedUp to redirect to login
-    state = state.copyWith(
-      status: AuthStatus.signedUp,
-      errorMessage: null,
-    );
   }
 
   Future<void> logout() async {
-    // Clear storage
+    LoggerService.i("👋 User Logging Out");
     await SecureStorageService.clearSession();
-    // Update state to unauthenticated
     state = AuthState.initial().copyWith(status: AuthStatus.unauthenticated);
   }
 
-  // Method to reset error state after showing toast
   void clearError() {
     if (state.status == AuthStatus.error) {
       state = state.copyWith(
@@ -145,7 +194,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // Method to reset signedUp state after navigation
   void clearSignedUp() {
     if (state.status == AuthStatus.signedUp) {
       state = state.copyWith(
