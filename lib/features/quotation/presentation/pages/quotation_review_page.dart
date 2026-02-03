@@ -15,6 +15,9 @@ import 'package:fogshield_dealer_connect/features/quotation/presentation/provide
 import 'package:fogshield_dealer_connect/core/database/app_database.dart';
 import 'package:fogshield_dealer_connect/core/providers/app_database_provider.dart';
 import 'package:fogshield_dealer_connect/core/database/app_database_tables.dart' as tables;
+// FIX: Hide databaseProvider from this import to prevent conflict
+import 'package:fogshield_dealer_connect/core/services/data_sync_service.dart' hide databaseProvider;
+import 'package:fogshield_dealer_connect/core/utils/logger_service.dart';
 
 @RoutePage()
 class QuotationReviewPage extends ConsumerStatefulWidget {
@@ -79,6 +82,8 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
     final quotationId = 'QT-${DateTime.now().year}-${const Uuid().v4().substring(0, 4).toUpperCase()}';
 
     try {
+      LoggerService.i("💾 Saving Quotation $quotationId locally...");
+
       final quotationRecord = Quotation(
         id: quotationId,
         customerName: formState.customerName,
@@ -98,7 +103,7 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
         totalAmount: cartState.total,
         discountPercentage: 0.0,
         status: tables.QuotationStatus.sent,
-        syncStatus: tables.SyncStatus.localOnly,
+        syncStatus: tables.SyncStatus.localOnly, // Default to local only
         notes: formState.notes,
         createdAt: DateTime.now(),
       );
@@ -112,15 +117,24 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
         );
       }).toList();
 
+      // 1. Save to Local Database (Offline First)
       await db.saveFullQuotation(quotationRecord, itemsToSave);
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1)); // UX delay
 
+      // 2. Clear Forms
       ref.read(cartProvider.notifier).clearCart();
       ref.read(quotationFormProvider.notifier).resetForm();
+
+      // 3. Trigger Background Sync (Fire and Forget)
+      // We don't await this because we want to show success immediately to the user
+      // while the upload happens in the background.
+      LoggerService.i("🚀 Triggering background sync for new quotation...");
+      ref.read(syncServiceProvider).performBackgroundSync();
 
       if (!mounted) return;
       setState(() => _isSubmitting = false);
 
+      // 4. Show Success Dialog
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -129,6 +143,7 @@ class _QuotationReviewPageState extends ConsumerState<QuotationReviewPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
+      LoggerService.e("Error saving quotation", e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error saving quotation: $e')),
       );

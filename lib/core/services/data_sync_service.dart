@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fogshield_dealer_connect/core/api/api_constants.dart';
 import 'package:http/http.dart' as http;
@@ -20,7 +20,7 @@ class DataSyncService {
   /// MASTER SYNC FUNCTION
   /// Runs:
   /// 1. Profile Sync (if dirty)
-  /// 2. Quotation Sync (if unsynced)
+  /// 2. Quotation Sync (if unsynced or failed previously)
   Future<void> performBackgroundSync() async {
     LoggerService.i("📡 Sync Service: Starting sync cycle...");
 
@@ -37,7 +37,6 @@ class DataSyncService {
   /// PROFILE SYNC LOGIC
   /// ----------------------------------------------------------------
 
-  /// Helper: Reconstructs profile from storage and tries to sync
   Future<void> _retryProfileSyncIfNeeded() async {
     final isDirty = await SecureStorageService.isProfileDirty();
     if (!isDirty) return;
@@ -45,7 +44,6 @@ class DataSyncService {
     LoggerService.i("🔄 Found pending profile changes. Retrying sync...");
     final data = await SecureStorageService.getProfileData();
 
-    // Ensure we have minimal valid data to sync
     if (data['userId'] == null) return;
 
     final profile = ProfileState(
@@ -62,7 +60,6 @@ class DataSyncService {
     await syncUserProfile(profile);
   }
 
-  /// Silently syncs profile. If successful, clears the 'dirty' flag.
   Future<void> syncUserProfile(ProfileState profile) async {
     if (profile.userId.isEmpty) return;
 
@@ -81,14 +78,12 @@ class DataSyncService {
 
       if (response.statusCode == 200) {
         LoggerService.i("✅ Silent Sync Success: Profile updated on server.");
-        // Mark as synced so we don't retry unnecessarily
         await SecureStorageService.setProfileDirty(false);
       } else {
         LoggerService.w("⚠️ Silent Sync Warning: Server returned ${response.statusCode}");
       }
     } catch (e) {
       LoggerService.e("❌ Silent Sync Error: $e (Will retry later)", e);
-      // We do NOT clear the dirty flag here, so it stays 'true' for retry
     }
   }
 
@@ -97,31 +92,80 @@ class DataSyncService {
   /// ----------------------------------------------------------------
 
   Future<void> _syncPendingQuotations() async {
-    final pending = await _db.getUnsyncedQuotations();
+    // Fetch quotes that are LocalOnly or Failed to retry them
+    final pending = await _db.getQuotationsForSync();
 
-    if (pending.isNotEmpty) {
-      LoggerService.i("📄 Found ${pending.length} pending quotations.");
+    if (pending.isEmpty) return;
+
+    LoggerService.i("📄 Found ${pending.length} pending quotations for upload.");
+
+    // Retrieve User ID from Secure Storage to link the quotation
+    final profileData = await SecureStorageService.getProfileData();
+    final userId = profileData['userId'];
+
+    if (userId == null || userId.isEmpty) {
+      LoggerService.e("❌ Sync Aborted: No User ID found in storage. Cannot upload quotations.");
+      return;
     }
 
     for (var quote in pending) {
+      // Mark as syncing in UI (Optional, handled by riverpod async value usually)
+      await _db.updateSyncStatus(quote.id, SyncStatus.syncing);
+
       try {
         final items = await _db.getItemsForQuotation(quote.id);
 
-        // --- Placeholder for API logic ---
-        // For now, we mock the server response
-        // final serverId = await myApi.upload(quote, items);
-        final String mockServerId = "REMOTE_${quote.id}";
+        // Construct Payload matching server expectations
+        final payload = {
+          "user_id": userId,
+          "quotation_id": quote.id,
+          "customer_name": quote.customerName,
+          "customer_phone": quote.phoneNumber,
+          "customer_email": quote.email,
+          "company_name": quote.companyName,
+          "gst_number": quote.gstNumber,
+          "billing_address": quote.billingAddress,
+          "billing_city": quote.billingCity,
+          "billing_state": quote.billingState,
+          "billing_pincode": quote.billingPincode,
+          "shipping_address": quote.shippingAddress,
+          "shipping_city": quote.shippingCity,
+          "shipping_state": quote.shippingState,
+          "shipping_pincode": quote.shippingPincode,
+          "total_amount": quote.totalAmount,
+          "notes": quote.notes,
+          "created_at": quote.createdAt.toIso8601String(),
+          "items": items.map((item) => {
+            "product_model": item.productModel,
+            "quantity": item.quantity,
+            "price": item.priceAtTimeOfSale,
+          }).toList(),
+        };
 
-        await _db.markAsSynced(quote.id, mockServerId);
-        LoggerService.i("✅ Quote ${quote.id} synced.");
+        LoggerService.d("📤 Uploading Quote ${quote.id}...");
+
+        final response = await http.post(
+          Uri.parse(ApiConstants.saveQuotation),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(payload),
+        );
+
+        if (response.statusCode == 200) {
+          final responseData = jsonDecode(response.body);
+
+          // Assuming server returns the remote ID in 'id' or 'server_id'
+          final remoteId = responseData['id']?.toString() ?? responseData['server_id']?.toString();
+
+          await _db.markAsSynced(quote.id, remoteId ?? "SERVER_ACK_${DateTime.now().millisecondsSinceEpoch}");
+          LoggerService.i("✅ Quote ${quote.id} synced successfully.");
+        } else {
+          throw Exception("Server Error: ${response.statusCode} - ${response.body}");
+        }
+
       } catch (e) {
         await _db.updateSyncStatus(quote.id, SyncStatus.failed);
-        LoggerService.e("❌ Quote ${quote.id} sync failed.", e);
+        LoggerService.e("❌ Quote ${quote.id} upload failed.", e);
       }
     }
-  }
-
-  Future<void> syncCatalogFromServer() async {
-    // Implementation for pulling master product list
   }
 }

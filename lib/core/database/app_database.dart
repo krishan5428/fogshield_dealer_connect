@@ -11,7 +11,6 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
-  // Increment version to 2 to trigger migration and handle new non-nullable columns with defaults
   @override
   int get schemaVersion => 3;
 
@@ -22,15 +21,7 @@ class AppDatabase extends _$AppDatabase {
         await m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        if (from < 2) {
-          // In v2, we added new fields to Quotations, but since the app was
-          // likely in early dev, we might have just relied on re-installation or ignored it.
-          // However, for best practices, we should ensure tables exist.
-          // For now, let's assume v2 baseline is handled or we just move forward.
-        }
-
         if (from < 3) {
-          // Version 3: Added 'notes' column to Quotations table
           await m.addColumn(quotations, quotations.notes);
         }
       },
@@ -63,9 +54,16 @@ class AppDatabase extends _$AppDatabase {
 
   // --- SYNC ENGINE HELPERS ---
 
-  /// Fetches quotations that have not yet been synced to the server
-  Future<List<Quotation>> getUnsyncedQuotations() =>
-      (select(quotations)..where((t) => t.syncStatus.equals(SyncStatus.localOnly.index))).get();
+  /// Fetches quotations that need syncing (LocalOnly OR Failed attempts)
+  /// This ensures that if a previous sync failed, it gets retried.
+  Future<List<Quotation>> getQuotationsForSync() {
+    return (select(quotations)
+      ..where((t) => t.syncStatus.isIn([
+        SyncStatus.localOnly.index,
+        SyncStatus.failed.index,
+      ])))
+        .get();
+  }
 
   /// Updates a local quotation with its server-side ID and marks it as synced
   Future<void> markAsSynced(String localId, String? serverId) {
@@ -88,9 +86,7 @@ class AppDatabase extends _$AppDatabase {
 /// Helper function to locate and open the SQLite database file on the device
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    // Locate the documents directory for the app
     final dbFolder = await getApplicationDocumentsDirectory();
-    // Use a versioned file name to help manage manual resets if needed during development
     final file = File(p.join(dbFolder.path, 'fogshield_dealer_v1.sqlite'));
     return NativeDatabase(file);
   });

@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:fogshield_dealer_connect/core/api/api_constants.dart';
 import 'package:http/http.dart' as http;
 
 class AuthRepository {
-  // Base URL for your API
-  static const String _baseUrl = 'https://securicoconnect.com/cms/apps/Securico/app_services';
 
   /// Login Method
   /// Endpoint: fogshield_dealer_login.php
@@ -13,7 +12,7 @@ class AuthRepository {
     required String password,
     String deviceId = 'unknown_device',
   }) async {
-    final uri = Uri.parse('$_baseUrl/fogshield_dealer_login.php');
+    final uri = Uri.parse(ApiConstants.login);
 
     try {
       final response = await http.post(uri, body: {
@@ -49,7 +48,7 @@ class AuthRepository {
     required String address,
     String companyName = 'Authorized Fogshield Partner',
   }) async {
-    final uri = Uri.parse('$_baseUrl/fogshield_dealer_signup.php');
+    final uri = Uri.parse(ApiConstants.signup);
 
     try {
       final response = await http.post(uri, body: {

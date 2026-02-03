@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fogshield_dealer_connect/core/widgets/custom_text_field.dart';
 import 'package:fogshield_dealer_connect/core/widgets/dropdown_field.dart';
 import 'package:fogshield_dealer_connect/core/utils/indian_states.dart';
@@ -53,6 +54,11 @@ class AddressInput extends StatelessWidget {
                 hint: '6 digits',
                 controller: pincodeController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(6),
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+
                 validator: (v) {
                   if (v == null || v.length != 6) return 'Invalid pincode';
                   return null;
