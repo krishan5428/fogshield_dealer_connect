@@ -49,10 +49,7 @@ class DashboardPage extends StatelessWidget {
           ],
         ),
         centerTitle: true,
-        actions: const [
-          NotificationIcon(count: 5),
-          SizedBox(width: 12),
-        ],
+
       ),
       body: const SingleChildScrollView(
         physics: BouncingScrollPhysics(),

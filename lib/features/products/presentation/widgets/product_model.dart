@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Represents a product from the FogShield Price List JAN 2026.
+/// Represents a product from the FogShield Price List.
 class Product {
   final String sNo;
   final String model;
@@ -28,12 +28,40 @@ class Product {
 
   String get formattedPrice => '₹${endUserPrice.toStringAsFixed(0)}';
   String get formattedMrp => '₹${mrp.toStringAsFixed(0)}';
+
+  /// Creates a copy of this Product but with the given fields replaced with the new values.
+  Product copyWith({
+    String? sNo,
+    String? model,
+    String? name,
+    String? description,
+    String? warranty,
+    double? endUserPrice,
+    double? mrp,
+    String? imagePath,
+    String? coverage,
+    String? category,
+  }) {
+    return Product(
+      sNo: sNo ?? this.sNo,
+      model: model ?? this.model,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      warranty: warranty ?? this.warranty,
+      endUserPrice: endUserPrice ?? this.endUserPrice,
+      mrp: mrp ?? this.mrp,
+      imagePath: imagePath ?? this.imagePath,
+      coverage: coverage ?? this.coverage,
+      category: category ?? this.category,
+    );
+  }
 }
 
 /// Provider to manage selected category filtering
 final selectedCategoryProvider = StateProvider<String>((ref) => 'ALL');
 
-/// THE COMPLETE JAN 2026 PRICE LIST (All 26 Entries)
+/// THE BASE LIST (Hardcoded for offline speed/images/descriptions)
+/// Prices here act as defaults until the API updates them.
 final List<Product> fogShieldProducts = [
   // --- FOGSHIELD PRO SERIES ---
   const Product(
@@ -228,7 +256,7 @@ final List<Product> fogShieldProducts = [
     warranty: '-',
     endUserPrice: 3800,
     mrp: 4484,
-    imagePath: 'assets/product/avr_protector.png',
+    imagePath: 'assets/product/monitoring_service.png',
     coverage: 'AVR',
     category: 'ACCESSORY',
   ),
